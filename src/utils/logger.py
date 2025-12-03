@@ -1,31 +1,24 @@
 import logging
-import sys
+import os
 
-def setup_logger(name: str) -> logging.Logger:
+def setup_logger(name):
     """
-    Sets up a logger with a standard format and console output.
+    Sets up a centralized logger with a specific name.
 
     Args:
-        name: The name for the logger, typically __name__.
+        name (str): The name of the logger, typically __name__ of the module.
 
     Returns:
-        A configured logging.Logger instance.
+        logging.Logger: Configured logger instance.
     """
     logger = logging.getLogger(name)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(os.environ.get("LOG_LEVEL", "INFO").upper())
 
-    # Create a handler that writes to the console
-    stream_handler = logging.StreamHandler(sys.stdout)
-
-    # Create a formatter and set it for the handler
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    stream_handler.setFormatter(formatter)
-
-    # Add the handler to the logger
-    # Avoid adding handlers multiple times
+    # Ensure handlers are not duplicated if logger is called multiple times
     if not logger.handlers:
-        logger.addHandler(stream_handler)
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
 
     return logger
