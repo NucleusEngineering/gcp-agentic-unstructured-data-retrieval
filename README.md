@@ -79,3 +79,33 @@ This project uses a `Makefile` to streamline common development tasks.
         *   Lints the code using `ruff`.
         *   Performs static type checking with `mypy`.
         *   Checks for obsolete dependencies with `deptry`.
+
+## Testing
+
+Once the development setup is complete, you can test the application by following these steps:
+
+1.  **Install Dependencies:**
+    If you haven't already, install the required libraries using Poetry:
+    ```bash
+    make install
+    ```
+    or
+    ```bash
+    poetry install
+    ```
+
+2.  **Add PDF Files:**
+    Place the PDF documents you want to process into the `data/raw/` directory.
+
+3.  **Run the Ingestion Pipeline:**
+    Use the `ingest` mode to parse, chunk, and process your PDFs.
+    ```bash
+    poetry run python main.py --mode ingest
+    ```
+    After the process completes, a `processed_data.json` file will be created in the `data/processed/` directory. This file is not yet uploaded to Vertex AI Search.
+
+4.  **Start the Chatbot:**
+    Run the `chat` mode to interact with the RAG agent. The agent will use the documents indexed in your Vertex AI Search datastore to answer questions.
+    ```bash
+    poetry run python main.py --mode chat
+    ```
