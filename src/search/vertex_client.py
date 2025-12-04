@@ -13,25 +13,24 @@ class VertexSearchClient:
     """
     def __init__(self):
         self.project_id = os.getenv("PROJECT_ID")
+        self.location = os.getenv("LOCATION") # Use the location from .env
         self.data_store_id = os.getenv("DATA_STORE_ID")
-        # Vertex AI Search uses 'global', 'us', or 'eu'. Assuming 'us' based on prior errors.
-        self.discovery_engine_location = "us"
 
-        if not all([self.project_id, self.data_store_id]):
-            logger.error("Missing one or more environment variables: PROJECT_ID, DATA_STORE_ID")
+        if not all([self.project_id, self.location, self.data_store_id]):
+            logger.error("Missing one or more environment variables: PROJECT_ID, LOCATION, DATA_STORE_ID")
             raise ValueError("Missing required environment variables for VertexSearchClient.")
 
-        # Set the API endpoint for the 'us' multi-region
-        api_endpoint = f"{self.discovery_engine_location}-discoveryengine.googleapis.com"
+        # Set the API endpoint based on the location from .env
+        api_endpoint = f"{self.location}-discoveryengine.googleapis.com"
         client_options = ClientOptions(api_endpoint=api_endpoint)
 
         logger.info(f"VertexSearchClient initializing with endpoint: {api_endpoint}")
         self.client = discoveryengine.SearchServiceClient(client_options=client_options)
         
-        # Construct the serving_config path using the correct multi-region location
+        # Construct the serving_config path using the location from .env
         self.serving_config = self.client.serving_config_path(
             project=self.project_id,
-            location=self.discovery_engine_location,
+            location=self.location,
             data_store=self.data_store_id,
             serving_config="default_config"
         )
