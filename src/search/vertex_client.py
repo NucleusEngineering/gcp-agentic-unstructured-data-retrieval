@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from google.cloud import discoveryengine_v1 as discoveryengine
-from src.utils.logger import setup_logger
+from src.shared.logger import setup_logger
 
 logger = setup_logger(__name__)
 load_dotenv()

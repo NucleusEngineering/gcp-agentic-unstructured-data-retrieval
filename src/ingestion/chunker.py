@@ -1,5 +1,5 @@
 from typing import List
-from src.utils.logger import setup_logger
+from src.shared.logger import setup_logger
 
 logger = setup_logger(__name__)
 

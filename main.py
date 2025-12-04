@@ -2,8 +2,8 @@ import argparse
 import os
 from dotenv import load_dotenv
 from src.ingestion.pipeline import run_ingestion
-from src.agent.bot import RAGAgent
-from src.utils.logger import setup_logger
+from src.agents.rag_agent import RAGAgent
+from src.shared.logger import setup_logger
 
 logger = setup_logger(__name__)
 load_dotenv()

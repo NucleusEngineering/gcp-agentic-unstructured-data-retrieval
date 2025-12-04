@@ -4,7 +4,7 @@ import uuid
 from glob import glob
 from src.ingestion.parser import parse_pdf
 from src.ingestion.chunker import chunk_text
-from src.utils.logger import setup_logger
+from src.shared.logger import setup_logger
 
 logger = setup_logger(__name__)
 
