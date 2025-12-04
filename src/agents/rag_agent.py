@@ -10,9 +10,9 @@ class RAGAgent:
     A Gemini-powered Agent for querying with a Search Tool, following ADK patterns with
     manual tool definition for Vertex AI SDK compatibility.
     """
-    def __init__(self, project_id: str, location: str, model_name: str = "gemini-2.0-flash-lite"):
-        # 1. Initialize Vertex AI
-        vertexai.init(project=project_id, location=location)
+    def __init__(self, project_id: str, vertex_ai_region: str, model_name: str = "gemini-2.0-flash-lite"):
+        # 1. Initialize Vertex AI with a specific GCP region
+        vertexai.init(project=project_id, location=vertex_ai_region)
         
         # 2. Manually define the tool as per Vertex AI SDK requirements
         retrieve_documents_tool = Tool(

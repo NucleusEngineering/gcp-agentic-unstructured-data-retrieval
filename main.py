@@ -15,12 +15,13 @@ def main():
     args = parser.parse_args()
 
     project_id = os.getenv("PROJECT_ID")
-    location = os.getenv("LOCATION") # This should be 'us', 'eu', or 'global' for the validator
+    location = os.getenv("LOCATION") # This is the Discovery Engine multi-region ('us', 'eu')
+    vertex_ai_region = os.getenv("VERTEX_AI_REGION") # This is the Vertex AI region (e.g., 'us-central1')
     data_store_id = os.getenv("DATA_STORE_ID")
 
-    if not all([project_id, location, data_store_id]):
-        logger.error("Missing PROJECT_ID, LOCATION, or DATA_STORE_ID environment variables.")
-        raise ValueError("PROJECT_ID, LOCATION, and DATA_STORE_ID must be set in the .env file.")
+    if not all([project_id, location, vertex_ai_region, data_store_id]):
+        logger.error("Missing one or more environment variables.")
+        raise ValueError("PROJECT_ID, LOCATION, VERTEX_AI_REGION, and DATA_STORE_ID must be set in the .env file.")
 
     if args.mode == "ingest":
         logger.info("Starting ingestion mode...")
@@ -33,7 +34,7 @@ def main():
         validate_datastore(project_id, location, data_store_id)
         
         logger.info("Starting chat mode...")
-        agent = RAGAgent(project_id=project_id, location=location)
+        agent = RAGAgent(project_id=project_id, vertex_ai_region=vertex_ai_region)
         print("\n--- RAG Chatbot ---\nType 'exit' to quit.\n")
         while True:
             question = input("You: ")
