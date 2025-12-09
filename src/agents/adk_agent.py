@@ -2,7 +2,7 @@
 from google.adk.agents import Agent
 from google.adk.models.google_llm import Gemini
 from src.agents.tools import search_knowledge_base
-from google.generativeai import types
+from google.genai import types
 
 # 2. Define the System Instruction (reused from your RAGAgent)
 system_prompt = """You are a helpful AI assistant.
@@ -21,6 +21,6 @@ agent_config = Agent(
     name="nelly_agent",
     model=model_config,
     instruction=system_prompt,
-    generate_content_config=types.GenerationConfig(temperature=0),
+    generate_content_config=types.GenerateContentConfig(temperature=0),
     tools=[search_knowledge_base], # Pass the decorated function directly
 )

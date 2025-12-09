@@ -6,13 +6,21 @@ authors = ["Your Name <you@example.com>"]
 readme = "README.md"
 packages = [{include = "src"}]
 
+[project]
+name = "gcp-agentic-unstructured-data-retrieval"
+version = "0.1.0"
+description = "A Python-based skeleton for a RAG system using GCP's Vertex AI and Discovery Engine."
+authors = [
+    {name = "Your Name", email = "you@example.com"},
+]
+readme = "README.md"
+
 [tool.poetry.dependencies]
 python = "^3.10"
 google-cloud-aiplatform = "^1.47.0"
 google-cloud-discoveryengine = ">=0.13.12,<0.14.0"
 pypdf = "^4.1.0"
 python-dotenv = "^1.0.1"
-
 google-cloud-storage = "^2.16.0"
 google-adk = "^1.20.0"
 google-generativeai = "^0.8.5"
@@ -28,3 +36,12 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.deptry]
 known_first_party = ["src"]
+
+[tool.mypy]
+ignore_missing_imports = true
+[[tool.mypy.overrides]]
+module = [
+    "opentelemetry.*",
+    "google.cloud.*"
+]
+ignore_missing_imports = true
