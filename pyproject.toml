@@ -9,7 +9,7 @@ packages = [{include = "src"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 google-cloud-aiplatform = "^1.47.0"
-google-cloud-discoveryengine = "^0.10.0"
+google-cloud-discoveryengine = "^0.15.0"
 pypdf = "^4.1.0"
 python-dotenv = "^1.0.1"
 
