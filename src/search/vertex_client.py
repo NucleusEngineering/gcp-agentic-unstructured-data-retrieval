@@ -13,11 +13,11 @@ class VertexSearchClient:
     """
     def __init__(self):
         self.project_id = os.getenv("PROJECT_ID")
-        self.location = os.getenv("LOCATION") # Use the location from .env
-        self.data_store_id = os.getenv("DATA_STORE_ID")
+        self.location = os.getenv("LOCATION")
+        self.engine_id = os.getenv("ENGINE_ID")
 
-        if not all([self.project_id, self.location, self.data_store_id]):
-            logger.error("Missing one or more environment variables: PROJECT_ID, LOCATION, DATA_STORE_ID")
+        if not all([self.project_id, self.location, self.engine_id]):
+            logger.error("Missing one or more environment variables: PROJECT_ID, LOCATION, ENGINE_ID")
             raise ValueError("Missing required environment variables for VertexSearchClient.")
 
         # Set the API endpoint based on the location from .env
@@ -27,12 +27,14 @@ class VertexSearchClient:
         logger.info(f"VertexSearchClient initializing with endpoint: {self.api_endpoint}")
         self.search_client = discoveryengine.SearchServiceClient(client_options=self.client_options)
         
-        # Construct the serving_config path using the location from .env
-        self.serving_config = self.search_client.serving_config_path(
-            project=self.project_id,
-            location=self.location,
-            data_store=self.data_store_id,
-            serving_config="default_config"
+        # Construct the serving_config path for the Enterprise Edition App (Engine)
+        # We need to instantiate an EngineServiceClient to use its path helper
+        self.serving_config = (
+            f"projects/{self.project_id}"
+            f"/locations/{self.location}"
+            f"/collections/default_collection"
+            f"/engines/{self.engine_id}"
+            f"/servingConfigs/default_config"
         )
         logger.info(f"Using serving config: {self.serving_config}")
         logger.info("VertexSearchClient initialized.")
@@ -46,7 +48,10 @@ class VertexSearchClient:
                 snippet_spec=discoveryengine.SearchRequest.ContentSearchSpec.SnippetSpec(
                     return_snippet=True
                 ),
-                # REMOVED: extractive_content_spec is Enterprise only.
+                extractive_content_spec=discoveryengine.SearchRequest.ContentSearchSpec.ExtractiveContentSpec(
+                    max_extractive_answer_count=1,
+                    max_extractive_segment_count=1,
+                ),
             )
 
             request = discoveryengine.SearchRequest(
@@ -67,18 +72,18 @@ class VertexSearchClient:
                 # Debug: Print available keys to see where the data is hiding
                 logger.info(f"Document keys found: {list(data.keys())}")
 
-                # 1. Check for Extractive Answers (Q&A style)
-                if data.get("extractive_answers"):
-                    for answer in data["extractive_answers"]:
-                        context_snippets.append(answer.get("content", ""))
-                
-                # 2. Check for Extractive Segments (Common for PDFs)
-                elif data.get("extractive_segments"):
+                # 1. Collect Extractive Segments (Priority: High - contains full paragraphs)
+                if data.get("extractive_segments"):
                     for segment in data["extractive_segments"]:
                         context_snippets.append(segment.get("content", ""))
 
-                # 3. Fallback to Snippets
-                elif data.get("snippets"):
+                # 2. Collect Extractive Answers (Priority: Medium - specific facts)
+                if data.get("extractive_answers"):
+                    for answer in data["extractive_answers"]:
+                        context_snippets.append(answer.get("content", ""))
+
+                # 3. Fallback to Snippets only if no better context was found
+                if not context_snippets and data.get("snippets"):
                     for snippet in data["snippets"]:
                         context_snippets.append(snippet.get("snippet", ""))
 
