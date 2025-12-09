@@ -2,7 +2,7 @@ import os
 import json
 from glob import glob
 import pypdf
-from google.cloud import storage  # type: ignore  # type: ignore
+from google.cloud import storage
 from src.shared.logger import setup_logger
 from src.search.vertex_client import VertexSearchClient
 from src.shared.sanitizer import sanitize_id
@@ -33,7 +33,6 @@ def run_ingestion(input_dir: str, output_dir: str):
     bucket = storage_client.bucket(gcs_bucket_name)
     metadata_list = []
 
-    # 1. Upload raw PDFs to GCS and prepare metadata
     logger.info(f"--- Uploading {len(pdf_files)} PDF files to GCS ---")
     for file_path in pdf_files:
         try:
@@ -45,7 +44,6 @@ def run_ingestion(input_dir: str, output_dir: str):
             gcs_uri = f"gs://{gcs_bucket_name}/{gcs_raw_path}"
             logger.info(f"Uploaded {file_name} to {gcs_uri}")
 
-            # Create metadata entry
             base_name = os.path.splitext(file_name)[0]
             doc_id = sanitize_id(base_name)
             metadata_list.append({
@@ -59,21 +57,18 @@ def run_ingestion(input_dir: str, output_dir: str):
         except Exception as e:
             logger.error(f"Failed to upload or process {file_path}: {e}")
     
-    # 2. Write metadata file locally
     metadata_file_path = os.path.join(output_dir, "metadata.jsonl")
     with open(metadata_file_path, "w", encoding="utf-8") as f:
         for entry in metadata_list:
             f.write(json.dumps(entry) + "\n")
     logger.info(f"Metadata file created at: {metadata_file_path}")
 
-    # 3. Upload metadata file to GCS
     gcs_metadata_path = "metadata/metadata.jsonl"
     metadata_blob = bucket.blob(gcs_metadata_path)
     metadata_blob.upload_from_filename(metadata_file_path)
     metadata_gcs_uri = f"gs://{gcs_bucket_name}/{gcs_metadata_path}"
     logger.info(f"Uploaded metadata file to {metadata_gcs_uri}")
 
-    # 4. Trigger Vertex AI Search import
     try:
         vertex_client = VertexSearchClient()
         vertex_client.import_from_gcs(metadata_gcs_uri)

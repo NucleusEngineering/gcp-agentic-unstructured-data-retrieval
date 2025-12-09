@@ -67,20 +67,14 @@ class VertexSearchClient:
 
                 data = result.document.derived_struct_data
 
-                # Debug: Print available keys to see where the data is hiding
-                logger.info(f"Document keys found: {list(data.keys())}")
-
-                # 1. Collect Extractive Segments (Priority: High - contains full paragraphs)
                 if data.get("extractive_segments"):
                     for segment in data["extractive_segments"]:
                         context_snippets.append(segment.get("content", ""))
 
-                # 2. Collect Extractive Answers (Priority: Medium - specific facts)
                 if data.get("extractive_answers"):
                     for answer in data["extractive_answers"]:
                         context_snippets.append(answer.get("content", ""))
 
-                # 3. Fallback to Snippets only if no better context was found
                 if not context_snippets and data.get("snippets"):
                     for snippet in data["snippets"]:
                         context_snippets.append(snippet.get("snippet", ""))
