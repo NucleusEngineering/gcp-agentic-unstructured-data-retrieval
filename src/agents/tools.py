@@ -1,18 +1,20 @@
+# src/agents/tools.py (Migrated)
 from src.search.vertex_client import VertexSearchClient
 from src.shared.logger import setup_logger
 
 logger = setup_logger(__name__)
 
+# Initialize the client once to be reused across tool calls.
+# This is more efficient and prevents re-initializing on every user query.
+search_client = VertexSearchClient()
+
 def search_knowledge_base(query: str) -> str:
     """
-    Searches the knowledge base using the VertexSearchClient.
+    Searches the Nelly Hackathon knowledge base to find information and answer user questions.
 
     Args:
-        query (str): The search query.
-
-    Returns:
-        str: Consolidated context from retrieved documents.
+        query: A detailed search query crafted from the user's question.
     """
     logger.info(f"Tool call: search_knowledge_base with query: {query}")
-    vertex_search_client = VertexSearchClient()
-    return vertex_search_client.search(query)
+    # Reuse the existing, fixed VertexSearchClient logic!
+    return search_client.search(query)

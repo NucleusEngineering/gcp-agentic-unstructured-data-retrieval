@@ -14,11 +14,10 @@ class VertexSearchClient:
     def __init__(self):
         self.project_id = os.getenv("PROJECT_ID")
         self.location = os.getenv("LOCATION")
-        self.engine_id = os.getenv("ENGINE_ID")
-        self.data_store_id = os.getenv("DATA_STORE_ID") # Needed for import operations
+        self.data_store_id = os.getenv("DATA_STORE_ID")
 
-        if not all([self.project_id, self.location, self.engine_id, self.data_store_id]):
-            logger.error("Missing one or more environment variables: PROJECT_ID, LOCATION, ENGINE_ID, DATA_STORE_ID")
+        if not all([self.project_id, self.location, self.data_store_id]):
+            logger.error("Missing one or more environment variables: PROJECT_ID, LOCATION, DATA_STORE_ID")
             raise ValueError("Missing required environment variables for VertexSearchClient.")
 
         # Set the API endpoint based on the location from .env
@@ -28,14 +27,12 @@ class VertexSearchClient:
         logger.info(f"VertexSearchClient initializing with endpoint: {self.api_endpoint}")
         self.search_client = discoveryengine.SearchServiceClient(client_options=self.client_options)
         
-        # Construct the serving_config path for the Enterprise Edition App (Engine)
-        # We need to instantiate an EngineServiceClient to use its path helper
-        self.serving_config = (
-            f"projects/{self.project_id}"
-            f"/locations/{self.location}"
-            f"/collections/default_collection"
-            f"/engines/{self.engine_id}"
-            f"/servingConfigs/default_config"
+        # Construct the serving_config path to target the data store directly
+        self.serving_config = self.search_client.serving_config_path(
+            project=self.project_id,
+            location=self.location,
+            data_store=self.data_store_id,
+            serving_config="default_config",
         )
         logger.info(f"Using serving config: {self.serving_config}")
         logger.info("VertexSearchClient initialized.")

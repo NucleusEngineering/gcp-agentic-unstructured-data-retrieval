@@ -1,139 +1,204 @@
-Here is a comprehensive guide to the Google Agent Development Kit (ADK). You can feed this directly into your CLI or use it as a context file (e.g., `docs/adk_framework_guide.md`) to ground your coding assistant in the specific patterns and best practices of the framework.
 
-***
+  Migration Guide: Custom SDK to Google ADK (Enriched)
 
-# Google Agent Development Kit (ADK) Framework Guide
+  Overview
 
-## 1. Overview
-The **Agent Development Kit (ADK)** is Google's modular, open-source framework designed to simplify the end-to-end development of intelligent AI agents. Unlike simple LLM wrappers, ADK provides a structured approach to building production-ready systems that can reason, act, and persist state.
+  This document outlines the steps to migrate the current "Nelly Hackathon" agent from
+   a raw vertexai SDK implementation to the Google Agent Development Kit (ADK).
 
-It is designed to be **model-agnostic** (optimized for Gemini/Vertex AI but supports others via LiteLLM) and **deployment-agnostic** (run locally, on Cloud Run, or Vertex AI Agent Engine).
+  Goal: Replace manual loop orchestration and tool definitions with ADK's managed
+  runtime, while preserving the custom Vertex AI Search logic. This migration will
+  touch the following files:
+   * src/agents/tools.py (Refactored)
+   * src/agents/rag_agent.py (Deleted)
+   * src/agents/adk_agent.py (New)
+   * main.py (Refactored)
 
-## 2. Core Architecture
-ADK decouples the agent's components to ensure modularity and testability.
+  Phase 1: Installation & Setup
 
-### 2.1. Key Components
-*   **Agents:** The "brains" that handle reasoning and orchestration. They do not execute code themselves but decide *which* tools to call.
-*   **Tools:** The "hands" of the agent. These are deterministic Python functions that interact with the outside world (APIs, databases, search).
-*   **Memory/State:** Manages the context of the conversation. ADK handles session state automatically, allowing agents to remember past interactions.
-*   **Runtimes:** The execution environment that manages the agent lifecycle (e.g., a local CLI loop, a FastAPI server, or the Vertex AI Agent Engine).
+  First, add the ADK library to your project.
 
-## 3. Best Practices for Agent Development
+   1 poetry add google-adk
 
-### 3.1. Tool Definition (The "Contract")
-The quality of an agent depends heavily on how tools are defined. The LLM uses the function signature and docstring to understand *when* and *how* to use a tool.
+  Phase 2: Adapt the Tools (src/agents/tools.py)
 
-*   **Descriptive Naming:** Use `verb_noun` syntax (e.g., `search_knowledge_base` is better than `search` or `get_data`).
-*   **Type Hinting:** **Mandatory**. You must type-hint all arguments and return values (e.g., `def calculate_tax(amount: float) -> float:`).
-*   **Docstrings:** Write clear, concise docstrings describing what the tool does and what the arguments represent. This is the "prompt" the model sees for the tool.
+  In your current setup, you manually define Tool objects in the agent class. In ADK,
+  you decorate functions to make them discoverable. We will also improve performance
+  by initializing the VertexSearchClient only once.
 
-### 3.2. Agent Design Patterns
-*   **Single Responsibility:** Avoid creating one "God Agent" that does everything. If an agent needs to handle Billing, Tech Support, and Sales, break it down into three specialized agents and use a routing mechanism.
-*   **Separation of Logic:** Keep your `agent.py` (definition) separate from your `main.py` (runtime/entry point).
-*   **Sequential Execution:** For mutative actions (creating tickets, sending emails), force sequential execution to prevent race conditions.
+  Action: Update src/agents/tools.py to use the @adk.tool decorator and a single
+  client instance.
 
-## 4. Recommended Project Structure
-Adopt this standard structure to keep your project compatible with ADK tooling and easy to navigate.
+    1 # src/agents/tools.py (Migrated)
+    2 from google.adk import tool
+    3 from src.search.vertex_client import VertexSearchClient
+    4 from src.shared.logger import setup_logger
+    5 
+    6 logger = setup_logger(__name__)
+    7 
+    8 # Initialize the client once to be reused across tool calls.
+    9 # This is more efficient and prevents re-initializing on every user query.
+   10 search_client = VertexSearchClient()
+   11 
+   12 @tool
+   13 def search_knowledge_base(query: str) -> str:
+   14     """
+   15     Searches the Nelly Hackathon knowledge base to find information and answer
+      user questions.
+   16 
+   17     Args:
+   18         query: A detailed search query crafted from the user's question.
+   19     """
+   20     logger.info(f"Tool call: search_knowledge_base with query: {query}")
+   21     # Reuse the existing, fixed VertexSearchClient logic!
+   22     return search_client.search(query)
 
-```text
-project_root/
-├── src/
-│   ├── agents/
-│   │   ├── __init__.py
-│   │   ├── support_agent.py    # Specialized agent logic
-│   │   └── tools.py            # Tools specific to this agent
-│   ├── shared/
-│   │   └── utils.py            # Shared utilities (logger, config)
-├── main.py                     # CLI Entry point / Runtime
-├── requirements.txt
-└── .env                        # Environment variables (API Keys, Project ID)
-```
+  Codebase-Specific Notes:
+   * Performance: Your previous implementation created a new VertexSearchClient instance
+      for every single query. This change creates a single, reusable instance, which is
+     more efficient and will reduce the repetitive VertexSearchClient initializing...
+     logs you were seeing.
+   * No Change to Search Logic: Your core Enterprise Search logic in
+     src/search/vertex_client.py remains untouched.
 
-## 5. Implementation Reference (Python)
+  Phase 3: Create the ADK Agent (src/agents/adk_agent.py)
 
-Below is a canonical example of defining an agent and a tool using ADK patterns.
+  Instead of your custom RAGAgent class, you will define an ADK Agent. This handles
+  memory, model connections, and the tool-calling loop automatically.
 
-### 5.1. Defining a Tool (`src/agents/tools.py`)
+  Action: Create a new file src/agents/adk_agent.py.
 
-```python
-from typing import Dict
+    1 # src/agents/adk_agent.py
+    2 from google.adk import Agent, Model
+    3 from src.agents.tools import search_knowledge_base
+    4 
+    5 def create_nelly_agent():
+    6     # 1. Define the Model Configuration
+    7     # ADK abstracts the specific provider (Gemini, etc.)
+    8     model = Model(
+    9         model_name="gemini-2.0-flash-lite",
+   10         parameters={"temperature": 0}
+   11     )
+   12 
+   13     # 2. Define the System Instruction (reused from your RAGAgent)
+   14     system_prompt = """You are a helpful AI assistant for the Nelly Hackathon.
+   15     Your knowledge comes exclusively from the "search_knowledge_base" tool.
+   16     ALWAYS use the tool to find information before answering.
+   17     If the user asks about "Nelly", "proposals", or "hackathons", search first."""
+   18 
+   19     # 3. Initialize the Agent
+   20     agent = Agent(
+   21         model=model,
+   22         system_instruction=system_prompt,
+   23         tools=[search_knowledge_base], # Pass the decorated function directly
+   24     )
+   25 
+   26     return agent
 
-def search_product_database(product_name: str, category: str = "general") -> Dict[str, str]:
-    """
-    Searches the internal product database for details and availability.
-    
-    Args:
-        product_name: The fuzzy name of the product to find (e.g., "Pixel 9").
-        category: Optional category filter (e.g., "electronics", "clothing").
-        
-    Returns:
-        A dictionary containing product details, price, and stock status.
-    """
-    # [Simulated Logic]
-    return {
-        "name": product_name,
-        "price": "799.99",
-        "stock": "In Stock",
-        "category": category
-    }
-```
+  Phase 4: Update the Entrypoint (main.py)
 
-### 5.2. Defining the Agent (`src/agents/support_agent.py`)
+  This is a critical step. The original migration guide only accounted for chat mode.
+  Your main.py also contains the vital ingest mode, which we must preserve.
 
-```python
-import vertexai
-from vertexai.preview.generative_models import GenerativeModel, Tool
-from src.agents.tools import search_product_database
+  Action: Update main.py to use the ADK runner for chat mode while keeping the
+  ingestion logic intact.
 
-class SupportAgent:
-    def __init__(self, model_name: str = "gemini-1.5-pro"):
-        # 1. Initialize Vertex AI
-        vertexai.init()
-        
-        # 2. Wrap functions as Tools
-        self.tools = Tool.from_function(search_product_database)
-        
-        # 3. Initialize Model with Tools
-        self.model = GenerativeModel(
-            model_name,
-            tools=[self.tools],
-        )
-        
-        # 4. Start Chat Session (Memory)
-        self.chat = self.model.start_chat(enable_automatic_function_calling=True)
+    1 # main.py (Migrated)
+    2 import argparse
+    3 from src.agents.adk_agent import create_nelly_agent
+    4 from src.ingestion.pipeline import run_ingestion
+    5 from src.shared.logger import setup_logger
+    6 from src.shared.validator import validate_datastore
+    7 import os
+    8 
+    9 logger = setup_logger(__name__)
+   10 
+   11 def run_chat_mode():
+   12     # ADK handles the environment variables for the model automatically
+   13     logger.info("Initializing ADK Agent...")
+   14     agent = create_nelly_agent()
+   15 
+   16     print("--- Nelly ADK Chatbot ---")
+   17     print("Type 'exit' to quit.")
+   18 
+   19     try:
+   20         while True:
+   21             user_input = input("\nYou: ")
+   22             if user_input.lower() in ["exit", "quit"]:
+   23                 break
+   24 
+   25             # agent.run() handles the tool calling loop automatically!
+   26             response = agent.run(user_input)
+   27             print(f"\nBot: {response.text}")
+   28 
+   29     except KeyboardInterrupt:
+   30         print("\nExiting...")
+   31     finally:
+   32         logger.info("Chat mode finished.")
+   33 
+   34 def main():
+   35     parser = argparse.ArgumentParser(description="Nelly RAG Agent CLI")
+   36     parser.add_argument(
+   37         "--mode",
+   38         choices=["chat", "ingest"],
+   39         required=True,
+   40         help="The mode to run the application in.",
+   41     )
+   42     args = parser.parse_args()
+   43 
+   44     # Validate common environment variables
+   45     project_id = os.getenv("PROJECT_ID")
+   46     location = os.getenv("LOCATION")
+   47     data_store_id = os.getenv("DATA_STORE_ID")
+   48 
+   49     if not all([project_id, location, data_store_id]):
+   50         logger.critical("Error: PROJECT_ID, LOCATION, and DATA_STORE_ID must be 
+      set in your .env file.")
+   51         return
+   52 
+   53     try:
+   54         validate_datastore(project_id, location, data_store_id)
+   55     except ValueError as e:
+   56         logger.critical(f"Datastore validation failed: {e}")
+   57         return
+   58     except Exception as e:
+   59         logger.critical(f"An unhandled error occurred: {e}")
+   60         return
+   61 
+   62     if args.mode == "chat":
+   63         logger.info("Starting chat mode...")
+   64         run_chat_mode()
+   65     elif args.mode == "ingest":
+   66         logger.info("Starting ingestion mode...")
+   67         run_ingestion(input_dir="data/raw", output_dir="data/processed")
+   68         logger.info("Ingestion mode finished.")
+   69 
+   70 if __name__ == "__main__":
+   71     main()
 
-    def ask(self, user_query: str) -> str:
-        """Sends a query to the agent and returns the natural language response."""
-        response = self.chat.send_message(user_query)
-        return response.text
-```
+  Phase 5: Cleanup
 
-### 5.3. The Runtime / CLI (`main.py`)
+  To avoid confusion and obsolete code, you can now safely delete the old agent file.
 
-```python
-import os
-from src.agents.support_agent import SupportAgent
+  Action: Delete src/agents/rag_agent.py.
 
-def main():
-    agent = SupportAgent()
-    print("🤖 Agent Ready! (Type 'exit' to quit)")
-    
-    while True:
-        user_input = input("You: ")
-        if user_input.lower() in ["exit", "quit"]:
-            break
-            
-        try:
-            response = agent.ask(user_input)
-            print(f"Agent: {response}")
-        except Exception as e:
-            print(f"Error: {e}")
+  Migration Checklist
 
-if __name__ == "__main__":
-    main()
-```
+   1. [ ] Install: google-adk installed via Poetry.
+   2. [ ] Tools: search_knowledge_base decorated with @tool and client is reused.
+   3. [ ] Agent: New src/agents/adk_agent.py created.
+   4. [ ] Main: main.py refactored to use agent.run() for chat and preserve ingest mode.
+   5. [ ] Cleanup: Old src/agents/rag_agent.py file deleted.
+   6. [ ] Verify: Run poetry run python main.py --mode chat and confirm the bot still
+      provides Enterprise-quality answers.
+   7. [ ] Verify: Run poetry run python main.py --mode ingest and confirm the ingestion
+      pipeline still works.
 
-## 6. Testing & Debugging
-*   **Local CLI:** Always build a simple CLI loop (like above) to test the "conversation flow" before deploying to a web UI.
-*   **Logging:** Inspect the raw `response.candidates` to see if the model *attempted* to call a tool but failed (e.g., due to missing arguments).
-*   **Safety Settings:** Be aware that default safety settings might block certain responses. You may need to adjust `safety_settings` in the `GenerativeModel` config for enterprise use cases.
+  Key Benefits of this Migration
+
+   * Less Boilerplate: No more manual FunctionDeclaration schemas or while loops.
+   * Managed State: ADK handles session history automatically.
+   * Improved Performance: The VertexSearchClient is now initialized only once,
+     improving efficiency.
+   * Maintainability: The codebase is now cleaner and more aligned with official Google
+     tooling, making it easier to maintain and extend.
