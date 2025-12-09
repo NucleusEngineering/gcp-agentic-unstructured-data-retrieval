@@ -17,3 +17,8 @@ check: # Check lock file consistency and run static code analysis
 	@poetry run mypy src/
 	@echo "🚀 Checking for obsolete dependencies: Running deptry"
 	@poetry run deptry src/
+
+.PHONY: create-engine
+create-engine: # Create the Enterprise Search Engine using the provided script
+	@echo "🚀 Creating Enterprise Search Engine..."
+	@poetry run python scripts/create_enterprise_engine.py
