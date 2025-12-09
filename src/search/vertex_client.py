@@ -15,9 +15,10 @@ class VertexSearchClient:
         self.project_id = os.getenv("PROJECT_ID")
         self.location = os.getenv("LOCATION")
         self.engine_id = os.getenv("ENGINE_ID")
+        self.data_store_id = os.getenv("DATA_STORE_ID") # Needed for import operations
 
-        if not all([self.project_id, self.location, self.engine_id]):
-            logger.error("Missing one or more environment variables: PROJECT_ID, LOCATION, ENGINE_ID")
+        if not all([self.project_id, self.location, self.engine_id, self.data_store_id]):
+            logger.error("Missing one or more environment variables: PROJECT_ID, LOCATION, ENGINE_ID, DATA_STORE_ID")
             raise ValueError("Missing required environment variables for VertexSearchClient.")
 
         # Set the API endpoint based on the location from .env
