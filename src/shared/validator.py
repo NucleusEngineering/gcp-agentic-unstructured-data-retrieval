@@ -29,10 +29,10 @@ def validate_datastore(project_id: str, location: str, data_store_id: str) -> bo
             api_endpoint = f"{location}-discoveryengine.googleapis.com"
             client_options = ClientOptions(api_endpoint=api_endpoint)
 
-        client = discoveryengine.DataStoreServiceClient(client_options=client_options)
+        client = discoveryengine.DataStoreServiceClient(client_options=client_options)  # type: ignore
         parent = f"projects/{project_id}/locations/{location}/collections/default_collection"
 
-        request = discoveryengine.ListDataStoresRequest(parent=parent)
+        request = discoveryengine.ListDataStoresRequest(parent=parent)  # type: ignore
         response = client.list_data_stores(request)
 
         for datastore in response:

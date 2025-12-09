@@ -1,7 +1,7 @@
 import os
 import json
 from glob import glob
-from google.cloud import storage
+from google.cloud import storage  # type: ignore  # type: ignore
 from src.shared.logger import setup_logger
 from src.search.vertex_client import VertexSearchClient
 from src.shared.sanitizer import sanitize_id
