@@ -71,21 +71,16 @@ Modify the ingestion pipeline to support a new format.
 
             * **Challenge:** Implement `parse_other_format(file_path)`.
 
-      
+        ```python
 
+        def parse_other_format(file_path: str) -> str:
 
-    # src/ingestion/parser.py
+            # TODO: HACKATHON CHALLENGE (Pillar 2)
 
+            # Implement logic to read other files than pdf.
 
-
-    def parse_other_format(file_path: str) -> str:
-
-        # TODO: HACKATHON CHALLENGE (Pillar 2)
-
-        # Implement logic to read other files than pdf.
-
-        pass
-
+            pass
+        ```
 
 2.  **`src/ingestion/pipeline.py`**:
 
@@ -101,23 +96,23 @@ Modify the ingestion pipeline to support a new format.
 
 
 
-    ```python
+        ```python
 
-    # src/ingestion/pipeline.py
+        # src/ingestion/pipeline.py
 
 
 
-    def run_ingestion(input_dir, output_dir):
+        def run_ingestion(input_dir, output_dir):
 
-        # TODO: HACKATHON CHALLENGE (Pillar 2)
+            # TODO: HACKATHON CHALLENGE (Pillar 2)
 
-        # 1. Glob for *.other_format files as well as *.pdf
+            # 1. Glob for *.other_format files as well as *.pdf
 
-        # 2. If file ends with .other_format, call parse_other_format() instead of parse_pdf()
+            # 2. If file ends with .other_format, call parse_other_format() instead of parse_pdf()
 
-        ...
+            ...
 
-    ```
+        ```
 
 
 
