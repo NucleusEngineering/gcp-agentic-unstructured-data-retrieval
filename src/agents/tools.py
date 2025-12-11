@@ -7,7 +7,10 @@ search_client = VertexSearchClient()
 
 def search_knowledge_base(query: str) -> str:
     """
-    Searches the Nelly Hackathon knowledge base to find information and answer user questions.
+    import os
+
+app_name = os.getenv("APP_NAME", "GenAI-RAG")
+) to find information and answer user questions.
 
     Args:
         query: A detailed search query crafted from the user's question.
