@@ -2,7 +2,7 @@ Here is the updated **Hackathon Challenge Guide**, replacing the specific ADK im
 
 -----
 
-# Hackathon Challenge Guide: "The Architect's Quest"
+# Hackathon Challenge Guide: 
 
 Welcome to the challenge. This guide outlines opportunities to re-engineer parts of the system. Your success will be evaluated on three pillars:
 
@@ -76,7 +76,6 @@ Modify the ingestion pipeline to support a new format.
 
       
 
-          ```python
 
     # src/ingestion/parser.py
 
@@ -89,9 +88,6 @@ Modify the ingestion pipeline to support a new format.
         # Implement logic to read other files than pdf.
 
         pass
-
-    ```
-
 
 
 2.  **`src/ingestion/pipeline.py`**:
