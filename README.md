@@ -33,29 +33,46 @@ The application operates in two main modes:
 
 ---
 
+## Prerequisites
+
+Before you begin, ensure you have the following tools installed on your system:
+-   **Python 3.10+**
+-   **[Poetry](https://python-poetry.org/docs/#installation)** for dependency management.
+-   **[Google Cloud SDK](https://cloud.google.com/sdk/docs/install)** to manage your Google Cloud resources from the command line.
+
 ## Getting Started
 
-### 1. Prerequisites
--   Python 3.10+
--   [Poetry](https://python-poetry.org/docs/#installation) for dependency management.
--   [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) installed and authenticated (`gcloud auth application-default login`).
+This section provides a streamlined guide to get the project running. For a more detailed breakdown of the infrastructure and architecture, please refer to the specific documentation mentioned above.
 
-### 2. Installation & Configuration
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/Ben-Cliff/gcp-agentic-unstructured-data-retrieval.git
-    cd gcp-agentic-unstructured-data-retrieval
-    ```
-2.  **Install dependencies:**
-    ```bash
-    poetry install
-    ```
-3.  **Configure environment variables:**
-    -   Copy the example file: `cp .env.example .env`
-    -   Edit the `.env` file and add your Google Cloud project details (`PROJECT_ID`, `LOCATION`, `DATA_STORE_ID`, etc.). See the inline comments in the `.env` file for guidance on where to find these values.
+### Step 1: Clone the Repository
+```bash
+git clone https://github.com/Ben-Cliff/gcp-agentic-unstructured-data-retrieval.git
+cd gcp-agentic-unstructured-data-retrieval
+```
 
-### 3. Provision Cloud Infrastructure
-Before running the application, you must create the necessary Google Cloud resources. Follow the instructions in the **[INFRASTRUCTURE_SETUP.md](./INFRASTRUCTURE_SETUP.md)** guide. This can be done easily by using the included `Makefile` commands.
+### Step 2: Install Dependencies
+This project uses Poetry for dependency management.
+```bash
+poetry install
+```
+
+### Step 3: Configure Your Environment
+Copy the example environment file and fill in the details for your Google Cloud project.
+```bash
+cp .env.example .env
+```
+Now, edit the `.env` file with your specific project information. Refer to the comments in the file for guidance.
+
+### Step 4: Provision Cloud Infrastructure
+This is the most important step. The included `Makefile` automates the entire setup of your Google Cloud resources.
+```bash
+make infra
+```
+
+> **A Note on Authentication:**
+> The first time you run `make infra`, it will likely detect that you are not logged into Google Cloud and prompt you to authenticate. This process (`gcloud auth application-default login`) will open a web browser for you to sign in.
+>
+> **Occasionally, the script may fail immediately after you log in.** This is normal. Simply **run `make infra` a second time,** and the script will pick up your new credentials and continue where it left off.
 
 ---
 
@@ -74,6 +91,7 @@ Before running the application, you must create the necessary Google Cloud resou
     ```bash
     poetry run python main.py --mode ingest
     ```
+    > **Note:** The indexing process in Vertex AI Search runs in the background and may take a few minutes to complete. Your data will be available for chat once this process is finished.
 
 ### 2. Chat with Your Data
 Once the ingestion is complete, start the interactive chat session:
