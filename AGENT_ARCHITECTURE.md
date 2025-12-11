@@ -28,7 +28,7 @@ This file is responsible for starting the application. When run in `chat` mode, 
 # main.py
 def run_chat_mode():
     logger.info("Initializing ADK Chat...")
-    print("--- Nelly ADK Chatbot ---")
+    print("--- [APP_NAME] ADK Chatbot ---")
     print("Type 'exit' to quit.")
     
     runner = InMemoryRunner(agent=agent_config)
@@ -72,7 +72,7 @@ model_config = Gemini(
 )
 
 agent_config = Agent(
-    name="nelly_agent",
+    name="[app_name]_agent",
     model=model_config,
     instruction=system_prompt,
     generate_content_config=types.GenerateContentConfig(temperature=0),
@@ -97,7 +97,7 @@ search_client = VertexSearchClient()
 
 def search_knowledge_base(query: str) -> str:
     """
-    Searches the Nelly Hackathon knowledge base to find information and answer user questions.
+    Searches the [APP_NAME] Hackathon knowledge base to find information and answer user questions.
 
     Args:
         query: A detailed search query crafted from the user's question.
