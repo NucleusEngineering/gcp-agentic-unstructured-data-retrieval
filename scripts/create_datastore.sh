@@ -60,12 +60,14 @@ CREATE_RESPONSE=$(curl -s -X POST \
 
 # --- 5. Check the Response ---
 if echo "${CREATE_RESPONSE}" | grep -q "error"; then
-  echo "ERROR: Failed to create DataStore."
-  echo "${CREATE_RESPONSE}"
   if echo "${CREATE_RESPONSE}" | grep -q "already exists"; then
-    echo "The DataStore '${DATA_STORE_ID}' in '${LOCATION}' already exists."
+    echo "✅ DataStore '${DATA_STORE_ID}' already exists. Continuing."
+    exit 0
   fi
+  echo "❌ ERROR: Failed to create DataStore."
+  echo "${CREATE_RESPONSE}"
+  exit 1
 else
-  echo "Successfully initiated DataStore creation."
+  echo "✅ Successfully initiated DataStore creation."
   echo "${CREATE_RESPONSE}"
 fi

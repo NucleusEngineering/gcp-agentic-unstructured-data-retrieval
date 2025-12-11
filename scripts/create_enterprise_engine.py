@@ -1,16 +1,24 @@
+import sys
 import os
 from google.api_core.client_options import ClientOptions
+from google.api_core.exceptions import NotFound
 from google.cloud import discoveryengine_v1 as discoveryengine
 
-# --- Configuration ---
-# You can modify these or load them from os.environ
-PROJECT_ID = "tony-allen"
-LOCATION = "eu"  # Important: Must match your Data Store location
-import os
+from dotenv import load_dotenv
 
-app_name = os.getenv("APP_NAME", "GenAI-RAG").lower().replace(' ', '-')
-DATA_STORE_ID = f"{app_name}-vertex-search-datastore"
-ENGINE_ID = f"{app_name}-search-app"
+# --- Configuration ---
+load_dotenv()
+PROJECT_ID = os.getenv("PROJECT_ID")
+LOCATION = os.getenv("LOCATION")
+DATA_STORE_ID = os.getenv("DATA_STORE_ID")
+ENGINE_ID = os.getenv("ENGINE_ID")
+APP_NAME = os.getenv("APP_NAME", "GenAI-RAG")
+
+if not all([PROJECT_ID, LOCATION, DATA_STORE_ID, ENGINE_ID]):
+    raise ValueError(
+        "Missing one or more required environment variables: "
+        "PROJECT_ID, LOCATION, DATA_STORE_ID, ENGINE_ID"
+    )
 
 def create_engine():
     print(f"🚀 Initializing Engine Creation for: {ENGINE_ID} in {LOCATION}...")
@@ -39,6 +47,23 @@ def create_engine():
     # Format: projects/{project}/locations/{location}/collections/{collection}
     parent = f"projects/{PROJECT_ID}/locations/{LOCATION}/collections/default_collection"
 
+    # Check if the engine already exists
+    try:
+        engine_path = client.engine_path(
+            project=PROJECT_ID,
+            location=LOCATION,
+            collection="default_collection",
+            engine=ENGINE_ID,
+        )
+        client.get_engine(name=engine_path)
+        print(f"✅ Engine '{ENGINE_ID}' already exists. Continuing.")
+        return
+    except NotFound:
+        print(f"Engine '{ENGINE_ID}' not found. Proceeding with creation...")
+    except Exception as e:
+        print(f"❌ An unexpected error occurred while checking for the engine: {e}")
+        sys.exit(1)
+
     # 4. Execute Creation Request
     request = discoveryengine.CreateEngineRequest(
         parent=parent,
@@ -55,6 +80,7 @@ def create_engine():
         print(f"   ID: {ENGINE_ID}")
     except Exception as e:
         print(f"❌ Error creating engine: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     create_engine()
