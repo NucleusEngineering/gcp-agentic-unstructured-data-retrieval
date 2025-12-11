@@ -62,8 +62,15 @@ Before running the application, you must create the necessary Google Cloud resou
 ## Usage
 
 ### 1. Ingest Your Data
-1.  Place your PDF files into the `data/raw` directory.
-2.  Run the ingestion pipeline:
+1.  **Generate sample data:**
+    Run the make command to generate synthetic medical records for testing.
+    ```bash
+    make generate-data
+    ```
+    > Alternatively, you can place your own PDF files into the `data/raw` directory.
+
+2.  **Run the ingestion pipeline:**
+    This command uploads the files to GCS and indexes them in Vertex AI Search.
     ```bash
     poetry run python main.py --mode ingest
     ```

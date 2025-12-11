@@ -24,6 +24,11 @@ check: # Check lock file consistency and run static code analysis
 	@echo "🚀 Checking for obsolete dependencies: Running deptry"
 	@poetry run deptry src/
 
+.PHONY: generate-data
+generate-data: # Generate synthetic PDF medical records for testing
+	@echo "🚀 Generating synthetic data..."
+	@poetry run python scripts/generate_data.py
+
 .PHONY: enable-apis
 enable-apis: # Enable required Google Cloud APIs
 	@echo "🚀 Enabling Discovery Engine API..."

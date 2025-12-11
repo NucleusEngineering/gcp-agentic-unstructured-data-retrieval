@@ -63,7 +63,7 @@ This checklist outlines the steps to set up the project from scratch in a new Go
 - [ ] **Generate or add data:**
   - **Option A (Generate):** Run the script to create mock data.
     ```bash
-    poetry run python scripts/generate_data.py
+    make generate-data
     ```
   - **Option B (Add your own):** Place your PDF files in the `data/raw` directory.
 - [ ] **Run the ingestion pipeline:**
