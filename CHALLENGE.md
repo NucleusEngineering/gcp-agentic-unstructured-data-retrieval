@@ -28,15 +28,19 @@ Your first task is to find the `# TODO: HACKATHON CHALLENGE` flags hidden in the
 
 
 
-**Target Files:**
+**Target Files & Concepts:**
 
+*   `src/ingestion/chunker.py`: The current chunker uses a basic fixed size. Your goal is to make it context-aware.
+    *   **Semantic Chunking:** Instead of splitting text by a fixed number of characters, this method groups text based on its meaning or topic. This ensures that related sentences and ideas are kept together, providing better context for the agent.
+    *   **Recursive Chunking:** This technique intelligently splits large documents by recursively working through a list of separators (e.g., paragraphs, then sentences, then words). This helps preserve the document's hierarchical structure.
 
+*   `src/search/vertex_client.py`: The current search is good but not great. Your goal is to make it more precise.
+    *   **Hybrid Search:** This approach combines the best of both worlds: traditional keyword-based search (great for acronyms and specific terms) and modern vector search (great for understanding context and meaning). The result is a more accurate and relevant set of search results.
+    *   **Metadata Filtering:** This allows the system to narrow down the search space *before* executing the query. For example, you could filter to only include documents created in the last year or those written by a specific author. This makes the search faster and the results more focused.
 
-  * `src/ingestion/chunker.py`: The current chunker is dumb (fixed size). Make it smart (**Semantic** or **Recursive**).
-
-  * `src/search/vertex_client.py`: The search is basic. Implement **Hybrid Search** or **Metadata Filtering**.
-
-  * `src/agents/rag_agent.py`: The agent is unconstrained. Give it a **Persona** and strict **System Instructions**.
+*   `src/agents/rag_agent.py`: The agent is generic. Your goal is to give it clear guardrails and a personality.
+    *   **Persona:** This defines the agent's character and style. Is it a formal medical expert, a friendly assistant, or a concise summarizer? A clear persona makes the agent's responses more consistent and predictable.
+    *   **System Instructions:** These are the hard rules the agent must follow. For example: "Always cite your sources," "Never provide a diagnosis," or "Keep your answers to three sentences or less." This is crucial for ensuring the agent behaves safely and responsibly.
 
 
 
@@ -68,15 +72,11 @@ Modify the ingestion pipeline to support a new format.
 
       * **Current State:** Only has `parse_pdf`.
 
-      * **Challenge:** Implement `parse_other_format(file_path)`.
+            * **Challenge:** Implement `parse_other_format(file_path)`.
 
+      
 
-
-    <!-- end list -->
-
-
-
-    ```python
+          ```python
 
     # src/ingestion/parser.py
 
@@ -201,19 +201,11 @@ Use this rubric to score the teams:
 
 
 | Category | Criteria | Points (0-5) |
-
 | :--- | :--- | :--- |
-
 | **Ingestion** | Did they fix the `chunker.py` TODOs (Semantic/Recursive)? | |
-
 | **Data Types** | Can the system successfully ingest and search a file with a different format? | |
-
 | **Search** | Did they implement Filtering or Hybrid Search in `vertex_client.py`? | |
-
 | **Architecture** | **(x2 Multiplier)** Is there a functioning Advanced ADK Pattern (Router, Auditor, etc.)? | |
-
 | **Stability** | Does the system run without crashing? | |
 
-
-
-**Total Score:** \_\_\_ / 30
+**Total Score:** ___ / 30
