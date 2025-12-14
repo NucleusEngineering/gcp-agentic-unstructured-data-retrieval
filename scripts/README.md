@@ -1,51 +1,25 @@
-# Scripts
+# Evaluating the RAG Agent
 
-This directory contains operational scripts for setting up infrastructure and generating data.
+This directory contains the script for evaluating the performance of the RAG agent. The primary goal of this evaluation is to provide a reliable, automated measure of the agent's ability to answer questions accurately and safely based on the provided documents.
 
----
+## The Challenge: Fixing the Evaluation Harness
 
-## Infrastructure Setup
+Currently, the `run_evaluation.py` script does **not** test the agent in a true 1-to-1 fashion. Instead of importing and running the actual ADK agent from `src/agents/adk_agent.py`, it **simulates** the agent's logic.
 
-The infrastructure for this project requires two key Google Cloud resources. The included `Makefile` provides a streamlined way to provision them.
+### Why is this a Problem?
 
-### Provisioning with Make
+This is a common anti-pattern in software testing for several critical reasons:
 
--   **`make create-datastore`**: Provisions the Vertex AI Search Data Store.
--   **`make create-engine`**: Provisions the Enterprise Search App (Engine).
--   **`make infra`**: A convenience target that runs both in the correct order.
+1.  **False Confidence:** The simulation can produce high scores that give a false sense of security, while the real agent might fail in interactive use. As we discovered, the simulated agent scored well, but the real agent with a "bad" prompt would refuse to answer questions.
+2.  **Code Divergence:** The logic in the evaluation script and the logic in the agent are separate. Any changes made to the agent's prompt or configuration will not be reflected in the evaluation, making the test results meaningless over time.
+3.  **Incomplete Simulation:** The simulation only tests the "happy path" and fails to capture the complex decision-making of the real agent, such as its choice of whether or not to use a tool.
 
-### Manual Execution
+## The Task
 
-You can also run the scripts directly:
+Your task is to refactor the `run_evaluation.py` script to correctly evaluate the agent. This involves:
 
-1.  **`./create_datastore.sh`**
-    -   **What it does:** Provisions the foundational **Vertex AI Search Data Store**.
-    -   **Why it's needed:** This is the "memory" of the system where your PDF documents are stored, indexed, and made searchable.
+1.  **Importing the Agent:** Modify the script to import the fully configured `agent_config` object from `src/agents/adk_agent.py`.
+2.  **Running the Agent:** Use the ADK's `InMemoryRunner` or a similar mechanism to execute the agent for each question in the dataset. This will involve handling asynchronous code.
+3.  **Capturing the Output:** Capture the final text response from the agent and pass it to the Vertex AI Evaluation service.
 
-2.  **`poetry run python create_enterprise_engine.py`**
-    -   **What it does:** Wraps the existing Data Store in an **Enterprise Edition App (Engine)**.
-    -   **Why it's needed:** This is the "brain" that provides the advanced features required for a RAG agent to work effectively. It unlocks the ability to extract detailed paragraphs and text chunks (`extractive_segments`) from your documents, which are then fed to the LLM.
-
----
-
-## Why Both Are Necessary: Standard vs. Enterprise Search
-
-A common challenge in building RAG bots is when the bot successfully identifies a relevant document but fails to answer specific questions about its content. This is because the search mechanism only returns high-level summaries (snippets), not the detailed text required for an LLM to truly comprehend the information.
-
--   **Standard Edition (Data Store):** Designed for traditional search to help users *find* relevant documents. It provides basic metadata and short `snippets` but lacks the ability to extract substantial chunks of text (`extractive_segments`).
--   **Enterprise Edition (Engine/App):** Built specifically to power generative AI applications like RAG. It provides rich `extractive_segments` and `extractive_answers`, enabling the LLM to receive large, contextually relevant portions of text and accurately answer specific questions.
-
-For an effective RAG application, the **Enterprise Edition is required**.
-
----
-
-## Data Generation
-
-### `generate_data.py`
-
--   **What it does:** This script generates synthetic, unstructured medical records in PDF format.
--   **Why it's needed:** It provides a simple way to create realistic "messy" data (like SOAP notes) to test the ingestion pipeline and the RAG agent's retrieval performance.
--   **How to run:**
-    ```bash
-    poetry run python scripts/generate_data.py
-    ```
+By completing this task, you will create a reliable test harness that accurately measures the performance of the agent, ensuring that any improvements to the prompt are correctly reflected in the evaluation scores.
