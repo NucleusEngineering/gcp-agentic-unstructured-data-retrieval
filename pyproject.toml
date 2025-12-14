@@ -17,7 +17,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-google-cloud-aiplatform = "^1.47.0"
+google-cloud-aiplatform = {extras = ["evaluation"], version = "^1.130.0"}
 google-cloud-discoveryengine = ">=0.13.12,<0.14.0"
 pypdf = "^4.1.0"
 python-dotenv = "^1.0.1"
@@ -26,6 +26,7 @@ google-adk = "^1.20.0"
 google-generativeai = "^0.8.5"
 faker = "^38.2.0"
 reportlab = "^4.4.5"
+pandas = "^2.3.3"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.1.15"

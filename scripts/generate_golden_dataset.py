@@ -1,0 +1,81 @@
+# scripts/generate_golden_dataset.py
+import os
+import glob
+import json
+import pandas as pd
+from google.cloud import aiplatform
+from vertexai.generative_models import GenerativeModel
+import vertexai
+from dotenv import load_dotenv
+from src.ingestion.parser import parse_pdf  # Re-using existing parser logic
+
+load_dotenv()
+
+# Configuration
+PROJECT_ID = os.getenv("PROJECT_ID")
+LOCATION = os.getenv("VERTEX_AI_REGION", "us-central1")
+INPUT_DIR = "data/raw"
+OUTPUT_FILE = "data/golden_dataset.jsonl"
+
+def generate_qa_pairs():
+    """Generates a golden dataset (Q&A pairs) from raw PDFs."""
+    
+    # Initialize Vertex AI
+    vertexai.init(project=PROJECT_ID, location=LOCATION)
+    # NOTE: gemini-1.5-flash-001 and gemini-1.0-pro are not available in europe-west1, using gemini-2.0-flash instead.
+    model = GenerativeModel("gemini-2.0-flash")
+    
+    pdf_files = glob.glob(os.path.join(INPUT_DIR, "*.pdf"))
+    dataset = []
+
+    print(f"Found {len(pdf_files)} PDF files. Generating Q&A pairs...")
+
+    for file_path in pdf_files:
+        try:
+            # 1. Extract text using existing project logic
+            text_content = parse_pdf(file_path)
+            
+            # 2. Prompt Gemini to generate Ground Truth
+            prompt = f"""
+            You are an expert medical annotator. 
+            Analyze the following medical record and generate 3 diverse question-answer pairs.
+            The questions should be specific to this patient.
+            
+            Format the output strictly as a list of JSON objects:
+            [
+                {{"question": "...", "answer": "..."}},
+                ...
+            ]
+
+            Medical Record Content:
+            {text_content[:8000]} # Truncate to fit context if needed
+            """
+            
+            response = model.generate_content(prompt)
+            
+            # 3. Parse JSON response (Basic cleanup)
+            content = response.text.replace("```json", "").replace("```", "").strip()
+            qa_pairs = json.loads(content)
+            
+            for pair in qa_pairs:
+                dataset.append({
+                    "context": text_content, # The source text (Reference)
+                    "question": pair["question"],
+                    "reference_answer": pair["answer"],
+                    "source_file": os.path.basename(file_path)
+                })
+                
+            print(f"Processed: {os.path.basename(file_path)}")
+
+        except Exception as e:
+            print(f"Skipping {file_path}: {e}")
+
+    # 4. Save to JSONL
+    with open(OUTPUT_FILE, "w") as f:
+        for entry in dataset:
+            f.write(json.dumps(entry) + "\n")
+    
+    print(f"✅ Golden dataset saved to {OUTPUT_FILE} ({len(dataset)} pairs)")
+
+if __name__ == "__main__":
+    generate_qa_pairs()
