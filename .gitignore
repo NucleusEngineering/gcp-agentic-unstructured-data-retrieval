@@ -207,9 +207,7 @@ marimo/_lsp/
 __marimo__/
 
 # Ignore generated data and temporary files
-data/raw/*.pdf
-out.txt
-data/processed/
+
 json
 os
 pd
