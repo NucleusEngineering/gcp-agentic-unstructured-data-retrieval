@@ -32,7 +32,7 @@ The application operates in three main modes:
 
 3.  **Evaluation (`poetry run python scripts/run_evaluation.py`):**
     -   Provides an out-of-the-box pipeline to measure the agent's performance.
-    -   This is done by generating a test dataset (`poetry run python scripts/generate_golden_dataset.py`) and then scores the agent's responses.
+    -   This can be updated by generating a test dataset (`poetry run python scripts/generate_golden_dataset.py`) on raw data and then scores the agent's responses.
     -   This entire process is customizable and can be adapted as the agent's capabilities evolve.
 
 ---
