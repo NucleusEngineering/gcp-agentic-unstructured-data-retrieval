@@ -205,11 +205,6 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-data/processed/*.json
-data/processed/
-data/processed/
-data/processed/
 
 # Ignore generated data and temporary files
-data/raw/*.pdf
 out.txt

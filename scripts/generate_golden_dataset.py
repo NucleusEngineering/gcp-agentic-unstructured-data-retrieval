@@ -15,7 +15,7 @@ load_dotenv()
 PROJECT_ID = os.getenv("PROJECT_ID")
 LOCATION = os.getenv("VERTEX_AI_REGION", "us-central1")
 INPUT_DIR = "data/raw"
-OUTPUT_FILE = "data/golden_dataset.jsonl"
+OUTPUT_FILE = "data/processed/golden_dataset.jsonl"
 
 def generate_qa_pairs():
     """Generates a golden dataset (Q&A pairs) from raw PDFs."""

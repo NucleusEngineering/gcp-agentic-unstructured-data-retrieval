@@ -25,8 +25,8 @@ import asyncio
 # Configuration
 PROJECT_ID = os.getenv("PROJECT_ID")
 LOCATION = os.getenv("VERTEX_AI_REGION", "europe-west1") 
-GOLDEN_DATASET = "data/golden_dataset.jsonl"
-RESULTS_FILE = "eval_results.json"
+GOLDEN_DATASET = "data/processed/golden_dataset.jsonl"
+RESULTS_FILE = "data/processed/eval_results.json"
 USER_ID = "eval_user_123"
 
 
