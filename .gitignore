@@ -213,3 +213,6 @@ os
 pd
 sys
 vertexai
+
+# PyCharm
+.idea/
