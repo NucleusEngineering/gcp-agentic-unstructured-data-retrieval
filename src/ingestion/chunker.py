@@ -92,6 +92,10 @@ def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 100) -> List[st
     def save_chunk(content_list: List[str], intro_prefix: str, chunks: List[str]):
         """Save a chunk with the intro prefix prepended."""
         if content_list:
+            # Skip chunks that only contain a section header (e.g., "PLAN:")
+            # A header-only chunk has exactly one item that ends with ":"
+            if len(content_list) == 1 and content_list[0].strip().endswith(':'):
+                return
             content = ' '.join(content_list)
             chunks.append(f"{intro_prefix} {content}")
 
