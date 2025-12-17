@@ -37,7 +37,7 @@ def run_ingestion(input_dir: str, output_dir: str):
         return
 
     os.makedirs(output_dir, exist_ok=True)
-    
+
     # =================================================================================================
     # TODO: HACKATHON CHALLENGE (Pillar 2: Extensibility)
     #
@@ -52,7 +52,10 @@ def run_ingestion(input_dir: str, output_dir: str):
     #
     # HINT: You can use `file_name.lower().endswith(".your_extension")` to check the file type.
     # =================================================================================================
-    all_files = glob(os.path.join(input_dir, "*.pdf")) # Extend this glob to include your new file type
+    supported_extensions = ["*.pdf", "*.txt", "*.csv", "*.eml"]
+    all_files = []
+    for pattern in supported_extensions:
+        all_files.extend(glob(os.path.join(input_dir, pattern)))
 
     if not all_files:
         logger.warning(f"No files found in input directory: {input_dir}")
@@ -75,13 +78,16 @@ def run_ingestion(input_dir: str, output_dir: str):
 
             base_name = os.path.splitext(file_name)[0]
             doc_id = sanitize_id(base_name)
-            
+
             # Determine mimeType based on file extension
-            mime_type = "application/pdf" # Default to PDF, update this based on your new file type logic
-            # if file_name.lower().endswith(".txt"):
-            #     mime_type = "text/plain"
-            # elif file_name.lower().endswith(".csv"):
-            #     mime_type = "text/csv"
+            file_extension = os.path.splitext(file_name)[1].lower()
+            mime_type_map = {
+                ".pdf": "application/pdf",
+                ".txt": "text/plain",
+                ".csv": "text/csv",
+                ".eml": "message/rfc822"
+            }
+            mime_type = mime_type_map.get(file_extension, "application/octet-stream")
 
             metadata_list.append({
                 "id": doc_id,
@@ -126,16 +132,15 @@ def _generate_local_processed_data(files: list[str], output_dir: str):
     for file_path in files:
         try:
             file_name = os.path.basename(file_path)
-            text_content = ""
-            if file_name.lower().endswith(".pdf"):
-                reader = pypdf.PdfReader(file_path)
-                for page in reader.pages:
-                    text_content += page.extract_text() + "\n"
+            file_extension = os.path.splitext(file_name)[1].lower()
+
+            if file_extension == ".pdf":
+                text_content = parse_pdf(file_path)
+            elif file_extension in [".txt", ".csv", ".eml"]:
+                text_content = parse_other_format(file_path)
             else:
-                # TODO: HACKATHON CHALLENGE (Pillar 2: Extensibility)
-                # Call your new parser function here for other file types.
-                # Example: text_content = parse_other_format(file_path)
-                text_content = parse_other_format(file_path) # Placeholder
+                logger.warning(f"Unsupported file type {file_extension} for {file_name}, skipping.")
+                continue
 
             if text_content:
                 processed_data.append({
