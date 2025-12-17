@@ -14,12 +14,12 @@
 import os
 import json
 from glob import glob
-import pypdf
 from google.cloud import storage
 from src.shared.logger import setup_logger
 from src.search.vertex_client import VertexSearchClient
 from src.shared.sanitizer import sanitize_id
 from src.ingestion.parser import parse_pdf, parse_other_format # Import the new parser
+from src.ingestion.chunker import chunk_text
 
 logger = setup_logger(__name__)
 
@@ -62,37 +62,60 @@ def run_ingestion(input_dir: str, output_dir: str):
     bucket = storage_client.bucket(gcs_bucket_name)
     metadata_list = []
 
-    logger.info(f"--- Uploading {len(all_files)} files to GCS ---")
+    logger.info(f"--- Processing {len(all_files)} files with chunking ---")
     for file_path in all_files:
         try:
             file_name = os.path.basename(file_path)
-            gcs_raw_path = f"raw/{file_name}"
-            
-            blob = bucket.blob(gcs_raw_path)
-            blob.upload_from_filename(file_path)
-            gcs_uri = f"gs://{gcs_bucket_name}/{gcs_raw_path}"
-            logger.info(f"Uploaded {file_name} to {gcs_uri}")
-
             base_name = os.path.splitext(file_name)[0]
-            doc_id = sanitize_id(base_name)
-            
-            # Determine mimeType based on file extension
-            mime_type = "application/pdf" # Default to PDF, update this based on your new file type logic
-            # if file_name.lower().endswith(".txt"):
-            #     mime_type = "text/plain"
-            # elif file_name.lower().endswith(".csv"):
-            #     mime_type = "text/csv"
 
-            metadata_list.append({
-                "id": doc_id,
-                "structData": {"source_file": file_name},
-                "content": {
-                    "mimeType": mime_type,
-                    "uri": gcs_uri
-                }
-            })
+            # Parse the PDF to extract text
+            logger.info(f"Parsing {file_name}...")
+            text_content = parse_pdf(file_path)
+
+            # Chunk the text using custom chunker
+            logger.info(f"Chunking text from {file_name}...")
+            chunks = chunk_text(text_content)
+            logger.info(f"Created {len(chunks)} chunks from {file_name}")
+
+            # Upload each chunk as a separate document to Vertex AI
+            for chunk_idx, chunk in enumerate(chunks):
+                # Create a unique ID for each chunk
+                chunk_id = sanitize_id(f"{base_name}_chunk_{chunk_idx}")
+
+                # Create a text file for the chunk
+                chunk_file_name = f"{base_name}_chunk_{chunk_idx}.txt"
+                chunk_file_path = os.path.join(output_dir, chunk_file_name)
+
+                # Write chunk to a temporary text file
+                with open(chunk_file_path, "w", encoding="utf-8") as f:
+                    f.write(chunk)
+
+                # Upload chunk to GCS
+                gcs_chunk_path = f"chunks/{chunk_file_name}"
+                blob = bucket.blob(gcs_chunk_path)
+                blob.upload_from_filename(chunk_file_path)
+                gcs_uri = f"gs://{gcs_bucket_name}/{gcs_chunk_path}"
+                logger.info(f"Uploaded chunk {chunk_idx + 1}/{len(chunks)} to {gcs_uri}")
+
+                # Clean up temporary chunk file
+                os.remove(chunk_file_path)
+
+                # Add to metadata list
+                metadata_list.append({
+                    "id": chunk_id,
+                    "structData": {
+                        "source_file": file_name,
+                        "chunk_index": chunk_idx,
+                        "total_chunks": len(chunks)
+                    },
+                    "content": {
+                        "mimeType": "text/plain",
+                        "uri": gcs_uri
+                    }
+                })
+
         except Exception as e:
-            logger.error(f"Failed to upload or process {file_path}: {e}")
+            logger.error(f"Failed to process {file_path}: {e}")
     
     metadata_file_path = os.path.join(output_dir, "metadata.jsonl")
     with open(metadata_file_path, "w", encoding="utf-8") as f:
@@ -117,20 +140,20 @@ def run_ingestion(input_dir: str, output_dir: str):
 
 def _generate_local_processed_data(files: list[str], output_dir: str):
     """
-    Parses files locally and saves the output to a JSON file for inspection.
-    This is a simulation of the chunking that Vertex AI would perform.
+    Parses files locally, chunks them, and saves the output to a JSON file for inspection.
+    This shows the actual chunks that will be sent to Vertex AI.
     """
-    logger.info("--- Generating local processed_data.json for chunking visibility ---")
+    logger.info("--- Generating local processed_data.json with chunks for visibility ---")
     processed_data = []
 
     for file_path in files:
         try:
             file_name = os.path.basename(file_path)
+            base_name = os.path.splitext(file_name)[0]
             text_content = ""
+
             if file_name.lower().endswith(".pdf"):
-                reader = pypdf.PdfReader(file_path)
-                for page in reader.pages:
-                    text_content += page.extract_text() + "\n"
+                text_content = parse_pdf(file_path)
             else:
                 # TODO: HACKATHON CHALLENGE (Pillar 2: Extensibility)
                 # Call your new parser function here for other file types.
@@ -138,13 +161,20 @@ def _generate_local_processed_data(files: list[str], output_dir: str):
                 text_content = parse_other_format(file_path) # Placeholder
 
             if text_content:
-                processed_data.append({
-                    "id": sanitize_id(f"{file_name}"),
-                    "structData": {
-                        "text_content": text_content,
-                        "source_file": file_name,
-                    }
-                })
+                # Chunk the text
+                chunks = chunk_text(text_content)
+
+                # Add each chunk as a separate entry
+                for chunk_idx, chunk in enumerate(chunks):
+                    processed_data.append({
+                        "id": sanitize_id(f"{base_name}_chunk_{chunk_idx}"),
+                        "structData": {
+                            "text_content": chunk,
+                            "source_file": file_name,
+                            "chunk_index": chunk_idx,
+                            "total_chunks": len(chunks)
+                        }
+                    })
         except Exception as e:
             logger.error(f"Failed to parse {file_path}: {e}")
 
@@ -152,5 +182,5 @@ def _generate_local_processed_data(files: list[str], output_dir: str):
     with open(output_file_path, "w", encoding="utf-8") as f:
         for entry in processed_data:
             f.write(json.dumps(entry) + "\n")
-    
-    logger.info(f"Local processed data saved to: {output_file_path}")
+
+    logger.info(f"Local processed data with {len(processed_data)} chunks saved to: {output_file_path}")
