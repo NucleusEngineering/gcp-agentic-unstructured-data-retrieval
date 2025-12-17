@@ -1,4 +1,3 @@
-from vertexai.preview.agents import tool
 from typing import List, Optional
 from src.database.structured_data import get_medical_database
 from src.shared.logger import setup_logger
@@ -9,7 +8,6 @@ logger = setup_logger(__name__)
 db = get_medical_database()
 
 
-@tool
 def get_patient_medications(patient_name: str) -> List[str]:
     """
     Get all medications for a specific patient.
@@ -26,7 +24,6 @@ def get_patient_medications(patient_name: str) -> List[str]:
     return medications
 
 
-@tool
 def count_patient_medications(patient_name: str) -> int:
     """
     Count the total number of medications a patient is taking.
@@ -43,7 +40,6 @@ def count_patient_medications(patient_name: str) -> int:
     return count
 
 
-@tool
 def search_patients_by_medication(medication_name: str) -> List[str]:
     """
     Find all patients taking a specific medication.
@@ -60,7 +56,6 @@ def search_patients_by_medication(medication_name: str) -> List[str]:
     return patients
 
 
-@tool
 def get_patient_doctor(patient_name: str) -> str:
     """
     Get the healthcare provider/doctor for a specific patient.
@@ -78,7 +73,6 @@ def get_patient_doctor(patient_name: str) -> str:
     return result
 
 
-@tool
 def get_all_patients() -> List[str]:
     """
     Get a list of all patients in the medical database.
@@ -92,7 +86,6 @@ def get_all_patients() -> List[str]:
     return patients
 
 
-@tool
 def get_patient_count() -> int:
     """
     Get the total number of patients in the medical database.
@@ -106,7 +99,6 @@ def get_patient_count() -> int:
     return count
 
 
-@tool
 def get_patient_diagnosis(patient_name: str) -> str:
     """
     Get the medical diagnosis/assessment for a specific patient.
@@ -129,7 +121,6 @@ def get_patient_diagnosis(patient_name: str) -> str:
         return "Not found"
 
 
-@tool
 def get_patient_treatment_plan(patient_name: str) -> str:
     """
     Get the treatment plan for a specific patient.
@@ -152,7 +143,6 @@ def get_patient_treatment_plan(patient_name: str) -> str:
         return "Not found"
 
 
-@tool
 def get_patient_visit_date(patient_name: str) -> str:
     """
     Get the date of the last medical visit for a specific patient.
