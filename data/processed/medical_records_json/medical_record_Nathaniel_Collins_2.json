@@ -1,0 +1,18 @@
+{
+  "filename": "medical_record_Nathaniel_Collins_2.pdf",
+  "patient": "Nathaniel Collins",
+  "date": "2025-10-12",
+  "provider": "Dr. Alexander",
+  "subjective": "Patient presents today complaining of chronic migraine which started approximately 2 weeks ago. They describe the pain/discomfort as a 7/10. Patient reports difficulty sleeping due to the symptoms. They deny any recent trauma or travel.",
+  "objective": "Vitals: BP 132/81, HR 74, Temp 97.6F. Physical exam reveals tenderness in the affected area if applicable. No acute distress noted. Lungs are clear to auscultation.",
+  "assessment": "Findings are consistent with Migraine w/ Aura. Differential diagnosis includes viral etiology or stress-related exacerbation.",
+  "plan": "1. Start Sertraline 50mg once daily. 2. Follow up in 4 weeks if symptoms do not improve. 3. Patient education provided regarding lifestyle changes and warning signs.",
+  "medications": [
+    {
+      "medication": "Sertraline",
+      "dosage": "50mg",
+      "frequency": "Once daily"
+    }
+  ],
+  "parsed_timestamp": "2025-12-17T14:16:48.746645"
+}

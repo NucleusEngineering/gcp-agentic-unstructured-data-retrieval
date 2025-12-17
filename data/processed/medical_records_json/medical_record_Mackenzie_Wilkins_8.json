@@ -1,0 +1,18 @@
+{
+  "filename": "medical_record_Mackenzie_Wilkins_8.pdf",
+  "patient": "Mackenzie Wilkins",
+  "date": "2025-07-25",
+  "provider": "Dr. Martinez",
+  "subjective": "Patient presents today complaining of persistent cough which started approximately 2 weeks ago. They describe the pain/discomfort as a 7/10. Patient reports difficulty sleeping due to the symptoms. They deny any recent trauma or travel.",
+  "objective": "Vitals: BP 135/87, HR 91, Temp 99.2F. Physical exam reveals tenderness in the affected area if applicable. No acute distress noted. Lungs are clear to auscultation.",
+  "assessment": "Findings are consistent with Hypertension. Differential diagnosis includes viral etiology or stress-related exacerbation.",
+  "plan": "1. Start Lisinopril 10mg once daily. 2. Follow up in 4 weeks if symptoms do not improve. 3. Patient education provided regarding lifestyle changes and warning signs.",
+  "medications": [
+    {
+      "medication": "Lisinopril",
+      "dosage": "10mg",
+      "frequency": "Once daily"
+    }
+  ],
+  "parsed_timestamp": "2025-12-17T14:16:48.722399"
+}

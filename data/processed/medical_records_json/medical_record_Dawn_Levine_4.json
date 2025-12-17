@@ -1,0 +1,18 @@
+{
+  "filename": "medical_record_Dawn_Levine_4.pdf",
+  "patient": "Dawn Levine",
+  "date": "2025-10-31",
+  "provider": "Dr. Baker",
+  "subjective": "Patient presents today complaining of persistent cough which started approximately 2 weeks ago. They describe the pain/discomfort as a 7/10. Patient reports difficulty sleeping due to the symptoms. They deny any recent trauma or travel.",
+  "objective": "Vitals: BP 126/80, HR 72, Temp 98.9F. Physical exam reveals tenderness in the affected area if applicable. No acute distress noted. Lungs are clear to auscultation.",
+  "assessment": "Findings are consistent with Generalized Anxiety Disorder. Differential diagnosis includes viral etiology or stress-related exacerbation.",
+  "plan": "1. Start Lisinopril 10mg once daily. 2. Follow up in 4 weeks if symptoms do not improve. 3. Patient education provided regarding lifestyle changes and warning signs.",
+  "medications": [
+    {
+      "medication": "Lisinopril",
+      "dosage": "10mg",
+      "frequency": "Once daily"
+    }
+  ],
+  "parsed_timestamp": "2025-12-17T14:16:48.709140"
+}

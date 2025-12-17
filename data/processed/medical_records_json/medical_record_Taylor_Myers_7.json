@@ -1,0 +1,18 @@
+{
+  "filename": "medical_record_Taylor_Myers_7.pdf",
+  "patient": "Taylor Myers",
+  "date": "2025-05-30",
+  "provider": "Dr. Baker",
+  "subjective": "Patient presents today complaining of chronic migraine which started approximately 2 weeks ago. They describe the pain/discomfort as a 4/10. Patient reports difficulty sleeping due to the symptoms. They deny any recent trauma or travel.",
+  "objective": "Vitals: BP 124/88, HR 66, Temp 99.4F. Physical exam reveals tenderness in the affected area if applicable. No acute distress noted. Lungs are clear to auscultation.",
+  "assessment": "Findings are consistent with Osteoarthritis. Differential diagnosis includes viral etiology or stress-related exacerbation.",
+  "plan": "1. Start Sumatriptan 50mg once daily. 2. Follow up in 4 weeks if symptoms do not improve. 3. Patient education provided regarding lifestyle changes and warning signs.",
+  "medications": [
+    {
+      "medication": "Sumatriptan",
+      "dosage": "50mg",
+      "frequency": "Once daily"
+    }
+  ],
+  "parsed_timestamp": "2025-12-17T14:16:48.699903"
+}
