@@ -19,6 +19,7 @@ from src.agents.adk_agent import agent_config
 from src.ingestion.pipeline import run_ingestion
 from src.shared.logger import setup_logger
 from src.shared.validator import validate_datastore
+from src.database.builder import load_medical_records_from_default_path
 import os
 
 logger = setup_logger(__name__)
@@ -30,9 +31,9 @@ def run_chat_mode():
 
     print(f"--- {app_name} ADK Chatbot ---")
     print("Type 'exit' to quit.")
-    
+
     runner = InMemoryRunner(agent=agent_config)
-    
+
     # Use the ADK's built-in debug runner for interactive chat
     # This handles the user input loop.
     async def chat():
@@ -61,7 +62,8 @@ def main():
     data_store_id = os.getenv("DATA_STORE_ID")
     # The ADK runner will automatically pick up the VERTEX_AI_REGION
     if not all([project_id, location, data_store_id, os.getenv("VERTEX_AI_REGION")]):
-        logger.critical("Error: PROJECT_ID, LOCATION, VERTEX_AI_REGION and DATA_STORE_ID must be set in your .env file.")
+        logger.critical(
+            "Error: PROJECT_ID, LOCATION, VERTEX_AI_REGION and DATA_STORE_ID must be set in your .env file.")
         return
 
     try:
@@ -80,6 +82,10 @@ def main():
         logger.info("Starting ingestion mode...")
         run_ingestion(input_dir="data/raw", output_dir="data/processed")
         logger.info("Ingestion mode finished.")
+    elif args.mode == "test-data":
+        logger.info("Testing structured data")
+        load_medical_records_from_default_path()
+        logger.info("Test finished.")
 
 if __name__ == "__main__":
     main()

@@ -14,6 +14,19 @@
 from src.search.vertex_client import VertexSearchClient
 from src.shared.logger import setup_logger
 
+# Import all medical database tools
+from src.database.tools import (
+    get_patient_medications,
+    count_patient_medications,
+    search_patients_by_medication,
+    get_patient_doctor,
+    get_all_patients,
+    get_patient_count,
+    get_patient_diagnosis,
+    get_patient_treatment_plan,
+    get_patient_visit_date
+)
+
 logger = setup_logger(__name__)
 
 search_client = VertexSearchClient()
@@ -26,3 +39,6 @@ def search_knowledge_base(query: str) -> str:
     """
     logger.info(f"Tool call: search_knowledge_base with query: {query}")
     return search_client.search(query)
+
+# All medical database tools are automatically available through imports
+# The ADK agent will discover these tools via the @tool decorators
