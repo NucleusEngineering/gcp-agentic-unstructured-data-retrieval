@@ -14,6 +14,7 @@
 from google.adk.agents import Agent
 from src.agents.tools import search_knowledge_base
 from google.genai import types
+from src.agents.prompt_router import choose_strategy
 
 
 # TODO: HACKATHON CHALLENGE (Challenge 2, Part 1)
@@ -34,10 +35,14 @@ app_name = os.getenv("APP_NAME", "GenAI-RAG").lower().replace(" ", "_").replace(
 
 # For a list of available models, see:
 # https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models
-agent_config = Agent(
-    name=f"{app_name}_agent",
-    model="gemini-2.0-flash-lite",
-    instruction=system_prompt,
-    generate_content_config=types.GenerateContentConfig(temperature=0),
-    tools=[search_knowledge_base],
-)
+def build_agent_for_query(user_query: str) -> Agent:
+    strat = choose_strategy(user_query)
+    prompt = strat.build(user_query)
+
+    return Agent(
+        name=f"{app_name}_agent",
+        model="gemini-2.5-flash",
+        instruction=prompt,
+        generate_content_config=types.GenerateContentConfig(temperature=0),
+        tools=[search_knowledge_base],
+    )

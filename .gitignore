@@ -216,3 +216,5 @@ vertexai
 
 # PyCharm
 .idea/
+
+.DS_Store

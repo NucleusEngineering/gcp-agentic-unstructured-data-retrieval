@@ -15,7 +15,7 @@
 import argparse
 import asyncio
 from google.adk.runners import InMemoryRunner
-from src.agents.adk_agent import agent_config
+from src.agents.adk_agent import build_agent_for_query
 from src.ingestion.pipeline import run_ingestion
 from src.shared.logger import setup_logger
 from src.shared.validator import validate_datastore
@@ -30,9 +30,7 @@ def run_chat_mode():
 
     print(f"--- {app_name} ADK Chatbot ---")
     print("Type 'exit' to quit.")
-    
-    runner = InMemoryRunner(agent=agent_config)
-    
+
     # Use the ADK's built-in debug runner for interactive chat
     # This handles the user input loop.
     async def chat():
@@ -40,6 +38,10 @@ def run_chat_mode():
             user_input = input("\nYou: ")
             if user_input.lower() in ["exit", "quit"]:
                 break
+
+            # This is not ideal but works for this demo
+            agent_config = build_agent_for_query(user_input)
+            runner = InMemoryRunner(agent=agent_config)
             await runner.run_debug(user_input)
 
     asyncio.run(chat())
