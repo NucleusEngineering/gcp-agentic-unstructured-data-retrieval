@@ -64,28 +64,19 @@ class VertexSearchClient:
     def search(self, query: str) -> str:
         """
         Executes a search query against the Vertex AI Search data store.
+
+        Args:
+            query: The search query string.
         """
         try:
             # =================================================================================================
-            # TODO: HACKATHON CHALLENGE (Pillar 1: Completeness)
+            # IMPLEMENTED ENHANCEMENTS (Challenge 1: Completeness - Hybrid Search):
             #
-            # The current search is a basic keyword search. Your challenge is to enhance it using
-            # Vertex AI Search's advanced capabilities.
-            #
-            # REQUIREMENT: You must implement ONE of the following search enhancements:
-            #
-            #   1. HYBRID SEARCH:
-            #      - Combine keyword-based search with vector-based (semantic) search.
-            #      - This typically involves setting `query_expansion_spec` and `spell_correction_spec`
-            #        in the `SearchRequest` to leverage Vertex AI's built-in capabilities.
-            #      - HINT: Explore `query_expansion_spec` and `spell_correction_spec` within
-            #        `discoveryengine.SearchRequest`.
-            #
-            #   2. METADATA FILTERING:
-            #      - Allow the search to be filtered based on document metadata (e.g., `source_file`, `page_number`).
-            #      - This requires adding a `filter` parameter to the `SearchRequest`.
-            #      - HINT: The `filter` parameter accepts a string with filter conditions, e.g.,
-            #        `"structData.source_file:exact_match('medical_record_John_Doe.pdf')"`.
+            # ✅ HYBRID SEARCH (Query Expansion + Spell Correction):
+            #    - Query expansion: Automatically adds synonyms and related medical terms
+            #    - Spell correction: Fixes typos in medical terminology (e.g., "diabetis" → "diabetes")
+            #    - Both configured with AUTO mode for intelligent activation
+            #    - Combines keyword-based search with semantic understanding
             #
             # =================================================================================================
 
@@ -99,13 +90,35 @@ class VertexSearchClient:
                 ),
             )
 
+            query_expansion_spec = discoveryengine.SearchRequest.QueryExpansionSpec(
+                condition=discoveryengine.SearchRequest.QueryExpansionSpec.Condition.AUTO,
+            )
+
+            spell_correction_spec = discoveryengine.SearchRequest.SpellCorrectionSpec(
+                mode=discoveryengine.SearchRequest.SpellCorrectionSpec.Mode.AUTO,
+            )
+
+            # Build the search request
             request = discoveryengine.SearchRequest(
                 serving_config=self.serving_config,
                 query=query,
                 page_size=5,
                 content_search_spec=content_search_spec,
+                query_expansion_spec=query_expansion_spec,
+                spell_correction_spec=spell_correction_spec,
             )
+
             response = self.search_client.search(request)
+
+            # Log query expansion details if available
+            if hasattr(response, 'query_expansion_info') and response.query_expansion_info:
+                expansion_info = response.query_expansion_info
+                if hasattr(expansion_info, 'expanded_query') and expansion_info.expanded_query:
+                    logger.info(f"Query Expansion - Expanded query: {expansion_info.expanded_query}")
+
+            # Log spell correction if available
+            if hasattr(response, 'corrected_query') and response.corrected_query:
+                logger.info(f"Spell Correction - Original: '{query}' → Corrected: '{response.corrected_query}'")
 
             context_snippets = []
             for result in response.results:
