@@ -67,44 +67,48 @@ class VertexSearchClient:
         """
         try:
             # =================================================================================================
-            # TODO: HACKATHON CHALLENGE (Pillar 1: Completeness)
+            # HACKATHON CHALLENGE IMPLEMENTATION: HYBRID SEARCH
             #
-            # The current search is a basic keyword search. Your challenge is to enhance it using
-            # Vertex AI Search's advanced capabilities.
-            #
-            # REQUIREMENT: You must implement ONE of the following search enhancements:
-            #
-            #   1. HYBRID SEARCH:
-            #      - Combine keyword-based search with vector-based (semantic) search.
-            #      - This typically involves setting `query_expansion_spec` and `spell_correction_spec`
-            #        in the `SearchRequest` to leverage Vertex AI's built-in capabilities.
-            #      - HINT: Explore `query_expansion_spec` and `spell_correction_spec` within
-            #        `discoveryengine.SearchRequest`.
-            #
-            #   2. METADATA FILTERING:
-            #      - Allow the search to be filtered based on document metadata (e.g., `source_file`, `page_number`).
-            #      - This requires adding a `filter` parameter to the `SearchRequest`.
-            #      - HINT: The `filter` parameter accepts a string with filter conditions, e.g.,
-            #        `"structData.source_file:exact_match('medical_record_John_Doe.pdf')"`.
-            #
+            # Enhanced search combining keyword-based search with semantic search capabilities
+            # using Vertex AI Search's query expansion and spell correction features.
             # =================================================================================================
 
+            # Enhanced content search specification
             content_search_spec = discoveryengine.SearchRequest.ContentSearchSpec(
                 snippet_spec=discoveryengine.SearchRequest.ContentSearchSpec.SnippetSpec(
-                    return_snippet=True
+                    return_snippet=True,
+                    max_snippet_count=3,  # Return more snippets for better context
                 ),
                 extractive_content_spec=discoveryengine.SearchRequest.ContentSearchSpec.ExtractiveContentSpec(
-                    max_extractive_answer_count=1,
-                    max_extractive_segment_count=1,
+                    max_extractive_answer_count=2,  # Increased for better coverage
+                    max_extractive_segment_count=3,  # More segments for comprehensive results
                 ),
             )
 
+            # HYBRID SEARCH: Query expansion for semantic matching
+            # This enables the search to find semantically related content beyond exact keyword matches
+            query_expansion_spec = discoveryengine.SearchRequest.QueryExpansionSpec(
+                condition=discoveryengine.SearchRequest.QueryExpansionSpec.Condition.AUTO,
+                pin_unexpanded_results=True  # Keep original keyword matches while adding semantic matches
+            )
+
+            # HYBRID SEARCH: Spell correction for handling typos and medical terminology variations
+            # This helps with medical terms that might be misspelled or have multiple spellings
+            spell_correction_spec = discoveryengine.SearchRequest.SpellCorrectionSpec(
+                mode=discoveryengine.SearchRequest.SpellCorrectionSpec.Mode.AUTO
+            )
+
+            # Build the enhanced hybrid search request
             request = discoveryengine.SearchRequest(
                 serving_config=self.serving_config,
                 query=query,
-                page_size=5,
+                page_size=10,  # Increased page size for more comprehensive results
                 content_search_spec=content_search_spec,
+                query_expansion_spec=query_expansion_spec,  # Enable semantic search
+                spell_correction_spec=spell_correction_spec,  # Enable spell correction
             )
+
+            logger.info(f"Executing hybrid search for query: '{query}' with semantic expansion and spell correction")
             response = self.search_client.search(request)
 
             context_snippets = []

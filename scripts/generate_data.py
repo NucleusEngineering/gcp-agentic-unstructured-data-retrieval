@@ -77,6 +77,7 @@ def create_pdf(filename, text):
             y_position = height - 50
         
     c.save()
+    
 
 def main():
     # Ensure the output directory exists

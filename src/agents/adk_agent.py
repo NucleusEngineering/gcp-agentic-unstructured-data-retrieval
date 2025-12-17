@@ -16,27 +16,16 @@ from src.agents.tools import search_knowledge_base
 from google.genai import types
 import os
 
-
-# TODO: HACKATHON CHALLENGE (Challenge 2, Part 1)
-# The prompt below is static. Your goal is to implement a prompt router
-# that dynamically selects a persona and instructions based on the user's query.
-# For example, a query asking for a summary might use a "summarizer" persona,
-# while a query asking for specific data points might use a "data extractor" persona.
-# You can define different prompt strategies in a new module and then
-# modify this agent to use a router to select one before executing the search.
-
-system_prompt = """
-You are a helpful assistant.
-"""
-
+# Default agent configuration (will be dynamically updated based on queries)
 app_name = os.getenv("APP_NAME", "GenAI-RAG").lower().replace(" ", "_").replace("-", "_")
+system_prompt = "You are a helpful assistant that provides accurate information based on the provided context."
 
-# For a list of available models, see:
-# https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models
+# For backward compatibility, create a default agent config
+# In practice, the dynamic agent created by medication_agent_manager should be used
 agent_config = Agent(
     name=f"{app_name}_agent",
     model="gemini-2.0-flash-lite",
-    instruction=system_prompt,
+    instruction=system_prompt,  # Default to scheduler
     generate_content_config=types.GenerateContentConfig(temperature=0),
     tools=[search_knowledge_base],
 )
