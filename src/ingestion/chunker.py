@@ -22,8 +22,8 @@ from src.shared.logger import setup_logger
 logger = setup_logger(__name__)
 
 
-SIMILARITY_THRESHOLD = 0.75
-MIN_SENTENCES_PER_CHUNK = 2
+SIMILARITY_THRESHOLD = 0.50
+MIN_SENTENCES_PER_CHUNK = 3
 EMBEDDING_MODEL_NAME = "text-embedding-004"
 EMBEDDING_BATCH_SIZE = 250
 EMBEDDING_DIMENSIONALITY = 768
@@ -38,14 +38,23 @@ def _get_embedding_model() -> TextEmbeddingModel:
         return _embedding_model_cache
 
     project_id = os.getenv("PROJECT_ID")
-    location = os.getenv("LOCATION")
+    location = os.getenv("LOCATION", "global")
     if not project_id:
         raise RuntimeError("PROJECT_ID environment variable not set")
 
+    # Map generic regions to specific embedding API regions
+    # Discovery Engine accepts "eu", "us", etc., but Text Embedding API needs full region names
+    region_mapping = {
+        "eu": "europe-west1",
+        "us": "us-central1",
+        "asia": "asia-southeast1"
+    }
+    embedding_location = region_mapping.get(location, location)
+
     try:
-        aiplatform.init(project=project_id, location=location)
+        aiplatform.init(project=project_id, location=embedding_location)
         _embedding_model_cache = TextEmbeddingModel.from_pretrained(EMBEDDING_MODEL_NAME)
-        logger.info(f"Initialized Vertex AI embedding model: {EMBEDDING_MODEL_NAME} (cached for reuse)")
+        logger.info(f"Initialized Vertex AI embedding model: {EMBEDDING_MODEL_NAME} in {embedding_location} (cached for reuse)")
     except Exception as initialization_error:
         raise RuntimeError(f"Embedding model initialization failed: {initialization_error}")
 

@@ -14,12 +14,12 @@
 import os
 import json
 from glob import glob
-import pypdf
 from google.cloud import storage
 from src.shared.logger import setup_logger
 from src.search.vertex_client import VertexSearchClient
 from src.shared.sanitizer import sanitize_id
-from src.ingestion.parser import parse_pdf, parse_other_format # Import the new parser
+from src.ingestion.parser import parse_pdf, parse_other_format
+from src.ingestion.chunker import chunk_text
 
 logger = setup_logger(__name__)
 
@@ -65,40 +65,62 @@ def run_ingestion(input_dir: str, output_dir: str):
     bucket = storage_client.bucket(gcs_bucket_name)
     metadata_list = []
 
-    logger.info(f"--- Uploading {len(all_files)} files to GCS ---")
+    logger.info(f"--- Processing {len(all_files)} files with semantic chunking ---")
+    total_chunks = 0
+
     for file_path in all_files:
         try:
             file_name = os.path.basename(file_path)
-            gcs_raw_path = f"raw/{file_name}"
-            
-            blob = bucket.blob(gcs_raw_path)
-            blob.upload_from_filename(file_path)
-            gcs_uri = f"gs://{gcs_bucket_name}/{gcs_raw_path}"
-            logger.info(f"Uploaded {file_name} to {gcs_uri}")
-
-            base_name = os.path.splitext(file_name)[0]
-            doc_id = sanitize_id(base_name)
-
-            # Determine mimeType based on file extension
             file_extension = os.path.splitext(file_name)[1].lower()
-            mime_type_map = {
-                ".pdf": "application/pdf",
-                ".txt": "text/plain",
-                ".csv": "text/csv",
-                ".eml": "message/rfc822"
-            }
-            mime_type = mime_type_map.get(file_extension, "application/octet-stream")
+            base_name = os.path.splitext(file_name)[0]
 
-            metadata_list.append({
-                "id": doc_id,
-                "structData": {"source_file": file_name},
-                "content": {
-                    "mimeType": mime_type,
-                    "uri": gcs_uri
-                }
-            })
+            logger.info(f"Parsing {file_name}...")
+            if file_extension == ".pdf":
+                text_content = parse_pdf(file_path)
+            elif file_extension in [".txt", ".csv", ".eml"]:
+                text_content = parse_other_format(file_path)
+            else:
+                logger.warning(f"Unsupported file type {file_extension}, skipping {file_name}")
+                continue
+
+            if not text_content or not text_content.strip():
+                logger.warning(f"No text extracted from {file_name}, skipping")
+                continue
+
+            logger.info(f"Applying semantic chunking to {file_name}...")
+            chunks = chunk_text(text_content, chunk_size=1000, overlap=0)
+            logger.info(f"Created {len(chunks)} semantic chunks from {file_name}")
+
+            for chunk_index, chunk_content in enumerate(chunks):
+                chunk_filename = f"{base_name}_chunk_{chunk_index}.txt"
+                gcs_chunk_path = f"chunks/{chunk_filename}"
+
+                blob = bucket.blob(gcs_chunk_path)
+                blob.upload_from_string(chunk_content, content_type="text/plain")
+                gcs_uri = f"gs://{gcs_bucket_name}/{gcs_chunk_path}"
+
+                chunk_doc_id = sanitize_id(f"{base_name}_chunk_{chunk_index}")
+                metadata_list.append({
+                    "id": chunk_doc_id,
+                    "structData": {
+                        "source_file": file_name,
+                        "chunk_index": chunk_index,
+                        "total_chunks": len(chunks)
+                    },
+                    "content": {
+                        "mimeType": "text/plain",
+                        "uri": gcs_uri
+                    }
+                })
+
+            total_chunks += len(chunks)
+            logger.info(f"Uploaded {len(chunks)} chunks from {file_name} to GCS")
+
         except Exception as e:
-            logger.error(f"Failed to upload or process {file_path}: {e}")
+            logger.error(f"Failed to process {file_path}: {e}")
+            continue
+
+    logger.info(f"--- Total: {total_chunks} chunks from {len(all_files)} files ---")
     
     metadata_file_path = os.path.join(output_dir, "metadata.jsonl")
     with open(metadata_file_path, "w", encoding="utf-8") as f:
@@ -133,6 +155,7 @@ def _generate_local_processed_data(files: list[str], output_dir: str):
         try:
             file_name = os.path.basename(file_path)
             file_extension = os.path.splitext(file_name)[1].lower()
+            base_name = os.path.splitext(file_name)[0]
 
             if file_extension == ".pdf":
                 text_content = parse_pdf(file_path)
@@ -142,14 +165,22 @@ def _generate_local_processed_data(files: list[str], output_dir: str):
                 logger.warning(f"Unsupported file type {file_extension} for {file_name}, skipping.")
                 continue
 
-            if text_content:
+            if not text_content or not text_content.strip():
+                continue
+
+            chunks = chunk_text(text_content, chunk_size=1000, overlap=0)
+            for chunk_index, chunk_content in enumerate(chunks):
                 processed_data.append({
-                    "id": sanitize_id(f"{file_name}"),
+                    "id": sanitize_id(f"{base_name}_chunk_{chunk_index}"),
                     "structData": {
-                        "text_content": text_content,
                         "source_file": file_name,
+                        "chunk_index": chunk_index,
+                        "total_chunks": len(chunks),
+                        "chunk_content": chunk_content,
+                        "chunk_length": len(chunk_content)
                     }
                 })
+
         except Exception as e:
             logger.error(f"Failed to parse {file_path}: {e}")
 
@@ -157,5 +188,5 @@ def _generate_local_processed_data(files: list[str], output_dir: str):
     with open(output_file_path, "w", encoding="utf-8") as f:
         for entry in processed_data:
             f.write(json.dumps(entry) + "\n")
-    
-    logger.info(f"Local processed data saved to: {output_file_path}")
+
+    logger.info(f"Local processed data with {len(processed_data)} chunks saved to: {output_file_path}")
