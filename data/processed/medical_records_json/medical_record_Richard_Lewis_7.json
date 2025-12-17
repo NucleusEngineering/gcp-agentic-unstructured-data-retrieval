@@ -1,0 +1,18 @@
+{
+  "filename": "medical_record_Richard_Lewis_7.pdf",
+  "patient": "Richard Lewis",
+  "date": "2025-08-11",
+  "provider": "Dr. Coleman",
+  "subjective": "Patient presents today complaining of irregular heartbeat which started approximately 2 weeks ago. They describe the pain/discomfort as a 5/10. Patient reports difficulty sleeping due to the symptoms. They deny any recent trauma or travel.",
+  "objective": "Vitals: BP 123/89, HR 84, Temp 98.3F. Physical exam reveals tenderness in the affected area if applicable. No acute distress noted. Lungs are clear to auscultation.",
+  "assessment": "Findings are consistent with Osteoarthritis. Differential diagnosis includes viral etiology or stress-related exacerbation.",
+  "plan": "1. Start Sertraline 50mg once daily. 2. Follow up in 4 weeks if symptoms do not improve. 3. Patient education provided regarding lifestyle changes and warning signs.",
+  "medications": [
+    {
+      "medication": "Sertraline",
+      "dosage": "50mg",
+      "frequency": "Once daily"
+    }
+  ],
+  "parsed_timestamp": "2025-12-17T14:19:29.329983"
+}

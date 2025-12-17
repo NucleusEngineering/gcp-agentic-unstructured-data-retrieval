@@ -1,0 +1,18 @@
+{
+  "filename": "medical_record_Benjamin_Huynh_7.pdf",
+  "patient": "Benjamin Huynh",
+  "date": "2025-08-01",
+  "provider": "Dr. Anderson",
+  "subjective": "Patient presents today complaining of fatigue which started approximately 2 weeks ago. They describe the pain/discomfort as a 1/10. Patient reports difficulty sleeping due to the symptoms. They deny any recent trauma or travel.",
+  "objective": "Vitals: BP 121/84, HR 93, Temp 97.5F. Physical exam reveals tenderness in the affected area if applicable. No acute distress noted. Lungs are clear to auscultation.",
+  "assessment": "Findings are consistent with Type 2 Diabetes. Differential diagnosis includes viral etiology or stress-related exacerbation.",
+  "plan": "1. Start Sertraline 50mg once daily. 2. Follow up in 4 weeks if symptoms do not improve. 3. Patient education provided regarding lifestyle changes and warning signs.",
+  "medications": [
+    {
+      "medication": "Sertraline",
+      "dosage": "50mg",
+      "frequency": "Once daily"
+    }
+  ],
+  "parsed_timestamp": "2025-12-17T14:19:29.328563"
+}
