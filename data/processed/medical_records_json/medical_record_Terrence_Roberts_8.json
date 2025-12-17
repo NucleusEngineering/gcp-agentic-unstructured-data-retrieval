@@ -1,0 +1,18 @@
+{
+  "filename": "medical_record_Terrence_Roberts_8.pdf",
+  "patient": "Terrence Roberts",
+  "date": "2025-08-30",
+  "provider": "Dr. Davis",
+  "subjective": "Patient presents today complaining of joint stiffness which started approximately 2 weeks ago. They describe the pain/discomfort as a 5/10. Patient reports difficulty sleeping due to the symptoms. They deny any recent trauma or travel.",
+  "objective": "Vitals: BP 115/73, HR 81, Temp 97.8F. Physical exam reveals tenderness in the affected area if applicable. No acute distress noted. Lungs are clear to auscultation.",
+  "assessment": "Findings are consistent with Osteoarthritis. Differential diagnosis includes viral etiology or stress-related exacerbation.",
+  "plan": "1. Start Amoxicillin 500mg once daily. 2. Follow up in 4 weeks if symptoms do not improve. 3. Patient education provided regarding lifestyle changes and warning signs.",
+  "medications": [
+    {
+      "medication": "Amoxicillin",
+      "dosage": "500mg",
+      "frequency": "Once daily"
+    }
+  ],
+  "parsed_timestamp": "2025-12-17T14:19:29.371621"
+}

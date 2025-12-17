@@ -1,0 +1,18 @@
+{
+  "filename": "medical_record_Billy_Rasmussen_9.pdf",
+  "patient": "Billy Rasmussen",
+  "date": "2025-05-01",
+  "provider": "Dr. Hodge",
+  "subjective": "Patient presents today complaining of chronic migraine which started approximately 2 weeks ago. They describe the pain/discomfort as a 4/10. Patient reports difficulty sleeping due to the symptoms. They deny any recent trauma or travel.",
+  "objective": "Vitals: BP 117/89, HR 93, Temp 99.0F. Physical exam reveals tenderness in the affected area if applicable. No acute distress noted. Lungs are clear to auscultation.",
+  "assessment": "Findings are consistent with Hypertension. Differential diagnosis includes viral etiology or stress-related exacerbation.",
+  "plan": "1. Start Metformin 500mg once daily. 2. Follow up in 4 weeks if symptoms do not improve. 3. Patient education provided regarding lifestyle changes and warning signs.",
+  "medications": [
+    {
+      "medication": "Metformin",
+      "dosage": "500mg",
+      "frequency": "Once daily"
+    }
+  ],
+  "parsed_timestamp": "2025-12-17T14:19:29.342071"
+}
