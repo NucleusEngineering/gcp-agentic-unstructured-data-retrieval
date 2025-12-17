@@ -101,10 +101,6 @@ A good agent isn't just about a good prompt; it's about *measurably* good prompt
 For code templates and implementation details, refer to the official documentation:
 
 👉 **[Vertex AI Gen AI Evaluation Service](https://cloud.google.com/vertex-ai/generative-ai/docs/models/evaluate-models)**
-👉 **[ADK Python Agent-to-Agent Basic Sample](https://github.com/google/adk-python/blob/main/contributing/samples/a2a_basic/README.md)**
-
-
-
 -----
 
 
@@ -240,7 +236,7 @@ Build a creative workflow where agents **talk to each other**, **execute tools**
 For code templates and implementation details, refer to the official ADK Python Agents:
 
 👉 **[Google ADK Python Agents Samples](https://github.com/google/adk-samples/tree/main/python/agents)**
-
+👉 **[ADK Python Agent-to-Agent Basic Sample](https://github.com/google/adk-python/blob/main/contributing/samples/a2a_basic/README.md)**
 
 
 -----
