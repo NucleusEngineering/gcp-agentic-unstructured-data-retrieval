@@ -18,7 +18,11 @@ logger = setup_logger(__name__)
 
 def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 100) -> List[str]:
     """
-    Splits text into context-aware segments.
+    Splits text into chunks.
+
+    NOTE: This is a naive, fixed-size implementation that serves as a placeholder.
+    For the hackathon, this should be replaced with a context-aware chunking strategy
+    like Recursive or Semantic chunking.
 
     Args:
         text (str): The input text to chunk.

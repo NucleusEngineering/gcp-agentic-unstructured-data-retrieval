@@ -26,7 +26,7 @@ Your first task is to find the `# TODO: HACKATHON CHALLENGE` flags hidden in the
 
 **Target Files & Concepts:**
 
-*   `src/ingestion/chunker.py`: The current chunker uses a basic fixed size. Your goal is to make it context-aware.
+*   `src/ingestion/chunker.py`: The current chunker is a naive, fixed-size example. Your goal is to replace it with a context-aware implementation. The current method uses a simple sliding window, splitting text every 1000 characters with a 100-character overlap. This approach is not context-aware and often breaks sentences and paragraphs, making it a key area for improvement.
     *   **Semantic Chunking:** Instead of splitting text by a fixed number of characters, this method groups text based on its meaning or topic. This ensures that related sentences and ideas are kept together, providing better context for the agent.
     *   **Recursive Chunking:** This technique intelligently splits large documents by recursively working through a list of separators (e.g., paragraphs, then sentences, then words). This helps preserve the document's hierarchical structure.
 
