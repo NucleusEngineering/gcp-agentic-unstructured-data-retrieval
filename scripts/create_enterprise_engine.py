@@ -11,13 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
+
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "google-cloud-discoveryengine",
+#     "python-dotenv",
+# ]
+# ///
+
 import os
+import sys
+
+from dotenv import load_dotenv
 from google.api_core.client_options import ClientOptions
 from google.api_core.exceptions import NotFound
 from google.cloud import discoveryengine_v1 as discoveryengine
-
-from dotenv import load_dotenv
 
 # --- Configuration ---
 load_dotenv()
