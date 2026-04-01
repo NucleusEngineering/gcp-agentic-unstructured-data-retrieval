@@ -17,7 +17,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-google-cloud-aiplatform = {extras = ["evaluation"], version = "^1.130.0"}
+google-cloud-aiplatform = {extras = ["evaluation"], version = "^1.133.0"}
 google-cloud-discoveryengine = ">=0.13.12,<0.14.0"
 pypdf = "^4.1.0"
 python-dotenv = "^1.0.1"
