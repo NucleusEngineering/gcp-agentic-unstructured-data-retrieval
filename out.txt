@@ -238,7 +238,7 @@ index 9851bf9..e69de29 100644
 --+++ b/Makefile
 --@@ -64,7 +64,16 @@ create-gcs-bucket: # Create the GCS bucket for document ingestion
 -- 	@echo "🚀 Creating GCS Bucket..."
--- 	@gsutil mb -p $(PROJECT_ID) -l $(LOCATION) gs://$(GCS_BUCKET_NAME) || true
+-- 	@gcloud storage buckets create gs://$(GCS_BUCKET_NAME) --project=$(PROJECT_ID) --location=$(LOCATION) || true
 -- 
 --+
 --+.PHONY: grant-permissions

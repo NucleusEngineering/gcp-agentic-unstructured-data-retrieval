@@ -56,7 +56,7 @@ create-engine: # Create the Enterprise Search App (Engine) using the provided sc
 .PHONY: create-gcs-bucket
 create-gcs-bucket: # Create the GCS bucket for document ingestion
 	@echo "🚀 Creating GCS Bucket..."
-	@gsutil mb -p $(PROJECT_ID) -l $(LOCATION) gs://$(GCS_BUCKET_NAME) || true
+	@gcloud storage buckets create gs://$(GCS_BUCKET_NAME) --project=$(PROJECT_ID) --location=$(LOCATION) || true
 
 
 .PHONY: grant-permissions
