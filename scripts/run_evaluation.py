@@ -11,29 +11,44 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "pandas",
+#     "google-cloud-aiplatform",
+#     "google-cloud-aiplatform[evaluation]",
+#     "python-dotenv",
+#     "google-adk",
+#     "google-genai",
+# ]
+# ///
+
 import json
-import pandas as pd
-import vertexai
-from vertexai.generative_models import GenerativeModel
-from vertexai.evaluation import EvalTask
 import os
 import sys
-from dotenv import load_dotenv
 import uuid
+
+import pandas as pd
+import vertexai
+from dotenv import load_dotenv
 from google.genai import types
+from vertexai.evaluation import EvalTask
+from vertexai.generative_models import GenerativeModel
 
 # Load environment variables
 load_dotenv()
 
 # Add 'src' to path so we can import the tool
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from src.agents.adk_agent import system_prompt
-from src.agents.tools import search_knowledge_base
+import asyncio
+
+from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
-from google.adk.artifacts import InMemoryArtifactService
-from src.agents.adk_agent import agent_config, app_name
-import asyncio
+
+from src.agents.adk_agent import agent_config, app_name, system_prompt
+from src.agents.tools import search_knowledge_base
 
 # Configuration
 PROJECT_ID = os.getenv("PROJECT_ID")

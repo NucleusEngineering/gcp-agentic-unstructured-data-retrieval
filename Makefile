@@ -17,6 +17,17 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
+UV_EXISTS := $(shell command -v uv 2> /dev/null)
+ifdef UV_EXISTS
+    PYTHON_TOOL_RUN := uv run
+    PYTHON_TOOL_SYNC := uv sync
+    PYTHON_TOOL_LOCK_CHECK := uv lock --check
+else
+    PYTHON_TOOL_RUN := poetry run python
+    PYTHON_TOOL_SYNC := poetry install
+    PYTHON_TOOL_LOCK_CHECK := poetry check --lock
+endif
+
 ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 TESTPATH := $(ROOT_DIR)/tests/
@@ -24,17 +35,17 @@ TESTPATH := $(ROOT_DIR)/tests/
 .PHONY: install
 install: # Install virtual environment with poetry
 	@echo "🚀 Installing dependencies using Poetry"
-	@poetry install
+	$(PYTHON_TOOL_SYNC)
 
 .PHONY: check
 check: # Check lock file consistency
 	@echo "🚀 Checking lock file consistency with 'pyproject.toml'"
-	@poetry check --lock
+	$(PYTHON_TOOL_LOCK_CHECK)
 
 .PHONY: generate-data
 generate-data: # Generate synthetic PDF medical records for testing
 	@echo "🚀 Generating synthetic data..."
-	@poetry run python scripts/generate_data.py
+	$(PYTHON_TOOL_RUN) scripts/generate_data.py
 
 .PHONY: enable-apis
 enable-apis: # Enable required Google Cloud APIs
@@ -51,7 +62,7 @@ create-datastore: enable-apis # Create the Vertex AI Search Data Store using the
 .PHONY: create-engine
 create-engine: # Create the Enterprise Search App (Engine) using the provided script
 	@echo "🚀 Creating Enterprise Search App (Engine)..."
-	@poetry run python scripts/create_enterprise_engine.py
+	$(PYTHON_TOOL_RUN) scripts/create_enterprise_engine.py
 
 .PHONY: create-gcs-bucket
 create-gcs-bucket: # Create the GCS bucket for document ingestion
